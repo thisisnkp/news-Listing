@@ -227,4 +227,60 @@ class RowController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'message' => 'No rows selected.']);
+        }
+
+        TableRow::whereIn('id', $ids)->delete();
+
+        return response()->json(['success' => true, 'message' => 'Selected rows deleted successfully.']);
+    }
+
+    public function sortAlphabetically(Request $request)
+    {
+        $planId = $request->input('plan_id');
+        $packageId = $request->input('package_id');
+
+        if (!$planId && !$packageId) {
+            return response()->json(['success' => false, 'message' => 'Invalid request.']);
+        }
+
+        $query = TableRow::query();
+
+        if ($planId) {
+            $query->where('plan_id', $planId);
+            $plan = Plan::find($planId);
+            $firstColumn = $plan->columns()->ordered()->first();
+        } else {
+            $query->where('package_id', $packageId);
+            $package = Package::find($packageId);
+            $firstColumn = $package->columns()->ordered()->first();
+        }
+
+        if (!$firstColumn) {
+            return response()->json(['success' => false, 'message' => 'No columns found to sort by.']);
+        }
+
+        // Fetch rows and sort them in PHP
+        // This is necessary because data is stored in a JSON column
+        $rows = $query->get();
+
+        $sortedRows = $rows->sortBy(function ($row) use ($firstColumn) {
+            $data = $row->getTranslatedData(); // Default language or fallback
+            return $data[$firstColumn->slug] ?? '';
+        }, SORT_NATURAL | SORT_FLAG_CASE);
+
+        // Update order in database
+        $order = 0;
+        foreach ($sortedRows as $row) {
+            $row->update(['order' => $order++]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Rows sorted alphabetically.']);
+    }
 }

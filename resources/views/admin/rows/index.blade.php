@@ -24,6 +24,12 @@ $package = $entity->package ?? null;
         </nav>
     </div>
     <div class="btn-group">
+        <button type="button" class="btn btn-outline-danger" id="bulkDeleteBtn" style="display: none;">
+            <i class="fas fa-trash me-2"></i>Delete Selected
+        </button>
+        <button type="button" class="btn btn-outline-secondary" id="sortAlphaBtn">
+            <i class="fas fa-sort-alpha-down me-2"></i>Sort Alphabetically
+        </button>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRowModal">
             <i class="fas fa-plus me-2"></i>Add Row
         </button>
@@ -77,6 +83,7 @@ $package = $entity->package ?? null;
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
+                        <th style="width: 40px"><input type="checkbox" id="selectAll"></th>
                         <th style="width: 60px">S.No</th>
                         @foreach($columns as $column)
                         <th>{{ $column->name }}</th>
@@ -84,13 +91,17 @@ $package = $entity->package ?? null;
                         <th style="width: 120px">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="sortableRows">
                     @foreach($rows as $row)
                     @php
                     $data = $row->getTranslatedData($defaultLanguage?->code ?? 'en');
                     @endphp
                     <tr data-row-id="{{ $row->id }}">
-                        <td>{{ $rows->firstItem() + $loop->index }}</td>
+                        <td><input type="checkbox" class="row-checkbox" value="{{ $row->id }}"></td>
+                        <td>
+                            <i class="fas fa-grip-vertical text-muted me-2" style="cursor: move;"></i>
+                            {{ $rows->firstItem() + $loop->index }}
+                        </td>
                         @foreach($columns as $column)
                         <td class="editable-cell"
                             data-column="{{ $column->slug }}"
@@ -370,7 +381,105 @@ $package = $entity->package ?? null;
 @endsection
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 <script>
+    // Drag and Drop
+    const sortableList = document.getElementById('sortableRows');
+    if (sortableList) {
+        new Sortable(sortableList, {
+            animation: 150,
+            handle: '.fa-grip-vertical',
+            onEnd: function() {
+                const order = [];
+                document.querySelectorAll('#sortableRows tr').forEach((row, index) => {
+                    order.push(row.dataset.rowId);
+                    row.querySelector('.fa-grip-vertical').nextSibling.textContent = index + 1;
+                });
+
+                fetch('{{ route("admin.rows.reorder") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ order: order })
+                });
+            }
+        });
+    }
+
+    // Bulk Delete
+    const selectAll = document.getElementById('selectAll');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+    function toggleBulkDeleteBtn() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        bulkDeleteBtn.style.display = checkedCount > 0 ? 'block' : 'none';
+        bulkDeleteBtn.textContent = `Delete Selected (${checkedCount})`;
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            rowCheckboxes.forEach(cb => cb.checked = this.checked);
+            toggleBulkDeleteBtn();
+        });
+    }
+
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', toggleBulkDeleteBtn);
+    });
+
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function() {
+            if (!confirm('Are you sure you want to delete selected rows?')) return;
+
+            const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+
+            fetch('{{ route("admin.rows.bulk_destroy") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    }
+
+    // Sort Alphabetically
+    const sortAlphaBtn = document.getElementById('sortAlphaBtn');
+    if (sortAlphaBtn) {
+        sortAlphaBtn.addEventListener('click', function() {
+            if (!confirm('This will reorder all rows alphabetically based on the first column. Continue?')) return;
+
+            fetch('{{ route("admin.rows.sort_alphabetically") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ plan_id: '{{ $plan->id }}' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    }
+
     // Edit Row
     document.querySelectorAll('.edit-row').forEach(btn => {
         btn.addEventListener('click', function() {

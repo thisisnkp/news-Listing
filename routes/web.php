@@ -84,6 +84,8 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|editor'])->name('admin.'
     Route::delete('rows/{row}', [RowController::class, 'destroy'])->name('rows.destroy');
     Route::post('plans/{plan}/rows/import', [RowController::class, 'import'])->name('rows.import');
     Route::post('rows/reorder', [RowController::class, 'reorder'])->name('rows.reorder');
+    Route::post('rows/bulk-destroy', [RowController::class, 'bulkDestroy'])->name('rows.bulk_destroy');
+    Route::post('rows/sort-alphabetically', [RowController::class, 'sortAlphabetically'])->name('rows.sort_alphabetically');
 
     // Rows Management (under packages - for media type)
     Route::get('packages/{package}/rows', [RowController::class, 'indexForPackage'])->name('rows.index.package');
