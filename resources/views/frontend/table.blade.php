@@ -6,14 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @php
-    $entity = $plan ?? $table;
-    $package = $entity->package ?? null;
+        $entity = $plan ?? $table;
+        $package = $entity->package ?? null;
     @endphp
     <title>{{ $entity->name }} - RV Rising Media</title>
     <meta name="description" content="{{ $entity->description ?? 'View ' . $entity->name }}">
 
     @if($favicon = App\Models\SiteSetting::getFavicon())
-    <link rel="icon" href="{{ $favicon }}">
+        <link rel="icon" href="{{ $favicon }}">
     @endif
 
     <!-- Bootstrap 5 -->
@@ -21,7 +21,8 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -537,14 +538,15 @@
                 <div>
                     <h1>{{ $entity->name }}</h1>
                     @if($entity->description)
-                    <p class="text-muted mb-2">{{ $entity->description }}</p>
+                        <p class="text-muted mb-2">{{ $entity->description }}</p>
                     @endif
                     <div class="plan-meta">
                         @if($entity->price)
-                        <span class="badge price-badge">₹{{ number_format($entity->price, 0) }}</span>
+                            <span class="badge price-badge">₹{{ number_format($entity->price, 0) }}</span>
                         @endif
                         @if(!empty($entity->services))
-                        <span class="badge"><i class="fas fa-check me-1"></i>{{ count($entity->services) }} Services</span>
+                            <span class="badge"><i class="fas fa-check me-1"></i>{{ count($entity->services) }}
+                                Services</span>
                         @endif
                     </div>
                 </div>
@@ -556,39 +558,49 @@
     <section class="container main-content">
         <!-- Filters -->
         @php
-        $enabledFilters = $entity->enabled_filters ?? ['da', 'dr', 'disclaimer', 'backlinks', 'indexing', 'sort_az', 'sort_za'];
+            $enabledFilters = $entity->enabled_filters ?? ['da', 'dr', 'disclaimer', 'backlinks', 'indexing', 'sort_az', 'sort_za'];
         @endphp
         <div class="filters-card">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-4">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" class="search-input" placeholder="Search..." x-model="search" @input.debounce.300ms="filterTable()">
+                        <input type="text" class="search-input" placeholder="Search..." x-model="search"
+                            @input.debounce.300ms="filterTable()">
                     </div>
                 </div>
                 <div class="col-lg-8">
-                    <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                        @if(in_array('sort_az', $enabledFilters))
-                        <button class="filter-btn" :class="{ 'active': sortBy === 'name' && sortDir === 'asc' }" @click="setSort('name', 'asc')">
-                            <i class="fas fa-sort-alpha-down me-1"></i>A-Z
-                        </button>
-                        @endif
-                        @if(in_array('sort_za', $enabledFilters))
-                        <button class="filter-btn" :class="{ 'active': sortBy === 'name' && sortDir === 'desc' }" @click="setSort('name', 'desc')">
-                            <i class="fas fa-sort-alpha-up me-1"></i>Z-A
-                        </button>
-                        @endif
-                        <button class="filter-btn" @click="resetFilters()">
-                            <i class="fas fa-undo me-1"></i>Reset
-                        </button>
-                        <a href="{{ route('plan.export', $entity->slug) }}?lang={{ $currentLang }}" class="filter-btn">
-                            <i class="fas fa-download me-1"></i>Export
-                        </a>
+                    <div
+                        class="d-flex flex-nowrap flex-md-wrap gap-2 justify-content-between justify-content-lg-end align-items-center">
+                        <select class="form-select w-auto flex-grow-1 flex-md-grow-0" x-model="sortBy"
+                            @change="handleSortChange()">
+                            <option value="">Sort By</option>
+                            <option value="a_z">A-Z</option>
+                            <option value="z_a">Z-A</option>
+                            <option value="price_high_low">Price High-Low</option>
+                            <option value="price_low_high">Price Low-High</option>
+                            <option value="recently_added">Recently Added</option>
+                        </select>
+
+                        <div class="d-flex gap-2">
+                            <button class="filter-btn" @click="resetFilters()" title="Reset">
+                                <i class="fas fa-undo"></i><span class="d-none d-md-inline ms-1">Reset</span>
+                            </button>
+                            <a href="{{ route('plan.export', $entity->slug) }}?lang={{ $currentLang }}"
+                                class="filter-btn" title="Export">
+                                <i class="fas fa-download"></i><span class="d-none d-md-inline ms-1">Export</span>
+                            </a>
+                        </div>
+
                         @if($entity->order_button_link)
-                        <a href="{{ $entity->order_button_link }}" class="btn-order" target="_blank">
-                            <!-- <i class="fas fa-shopping-cart"></i>  -->
-                            Order Now
-                        </a>
+                            <a href="{{ $entity->order_button_link }}" class="btn-order d-none d-md-inline-flex"
+                                target="_blank">
+                                Order Now
+                            </a>
+                            <a href="{{ $entity->order_button_link }}" class="btn-action d-inline-flex d-md-none"
+                                target="_blank">
+                                <i class="fas fa-shopping-cart"></i>
+                            </a>
                         @endif
                     </div>
                 </div>
@@ -596,59 +608,59 @@
 
             <!-- Dropdown Filters -->
             @if(in_array('da', $enabledFilters) || in_array('dr', $enabledFilters) || in_array('disclaimer', $enabledFilters) || in_array('backlinks', $enabledFilters) || in_array('indexing', $enabledFilters))
-            <div class="row g-2 mt-2">
-                @if(in_array('da', $enabledFilters))
-                <div class="col-4 col-md-4 col-lg-2">
-                    <select class="form-select form-select-sm" x-model="filterDA" @change="filterTable()">
-                        <option value="">All DA</option>
-                        <option value="0-20">DA 0-20</option>
-                        <option value="21-40">DA 21-40</option>
-                        <option value="41-60">DA 41-60</option>
-                        <option value="61-80">DA 61-80</option>
-                        <option value="81-100">DA 81+</option>
-                    </select>
+                <div class="row g-2 mt-2">
+                    @if(in_array('da', $enabledFilters))
+                        <div class="col-4 col-md-4 col-lg-2">
+                            <select class="form-select form-select-sm" x-model="filterDA" @change="filterTable()">
+                                <option value="">All DA</option>
+                                <option value="0-20">DA 0-20</option>
+                                <option value="21-40">DA 21-40</option>
+                                <option value="41-60">DA 41-60</option>
+                                <option value="61-80">DA 61-80</option>
+                                <option value="81-100">DA 81+</option>
+                            </select>
+                        </div>
+                    @endif
+                    @if(in_array('dr', $enabledFilters))
+                        <div class="col-4 col-md-4 col-lg-2">
+                            <select class="form-select form-select-sm" x-model="filterDR" @change="filterTable()">
+                                <option value="">All DR</option>
+                                <option value="0-20">DR 0-20</option>
+                                <option value="21-40">DR 21-40</option>
+                                <option value="41-60">DR 41-60</option>
+                                <option value="61-80">DR 61-80</option>
+                                <option value="81-100">DR 81+</option>
+                            </select>
+                        </div>
+                    @endif
+                    @if(in_array('disclaimer', $enabledFilters))
+                        <div class="col-4 col-md-4 col-lg-2">
+                            <select class="form-select form-select-sm" x-model="filterDisclaimer" @change="filterTable()">
+                                <option value="">Disclaimer</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    @endif
+                    @if(in_array('backlinks', $enabledFilters))
+                        <div class="col-4 col-md-4 col-lg-2">
+                            <select class="form-select form-select-sm" x-model="filterBacklink" @change="filterTable()">
+                                <option value="">Backlinks</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    @endif
+                    @if(in_array('indexing', $enabledFilters))
+                        <div class="col-4 col-md-4 col-lg-2">
+                            <select class="form-select form-select-sm" x-model="filterIndexing" @change="filterTable()">
+                                <option value="">Indexing</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    @endif
                 </div>
-                @endif
-                @if(in_array('dr', $enabledFilters))
-                <div class="col-4 col-md-4 col-lg-2">
-                    <select class="form-select form-select-sm" x-model="filterDR" @change="filterTable()">
-                        <option value="">All DR</option>
-                        <option value="0-20">DR 0-20</option>
-                        <option value="21-40">DR 21-40</option>
-                        <option value="41-60">DR 41-60</option>
-                        <option value="61-80">DR 61-80</option>
-                        <option value="81-100">DR 81+</option>
-                    </select>
-                </div>
-                @endif
-                @if(in_array('disclaimer', $enabledFilters))
-                <div class="col-4 col-md-4 col-lg-2">
-                    <select class="form-select form-select-sm" x-model="filterDisclaimer" @change="filterTable()">
-                        <option value="">Disclaimer</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select>
-                </div>
-                @endif
-                @if(in_array('backlinks', $enabledFilters))
-                <div class="col-4 col-md-4 col-lg-2">
-                    <select class="form-select form-select-sm" x-model="filterBacklink" @change="filterTable()">
-                        <option value="">Backlinks</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select>
-                </div>
-                @endif
-                @if(in_array('indexing', $enabledFilters))
-                <div class="col-4 col-md-4 col-lg-2">
-                    <select class="form-select form-select-sm" x-model="filterIndexing" @change="filterTable()">
-                        <option value="">Indexing</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select>
-                </div>
-                @endif
-            </div>
             @endif
         </div>
 
@@ -665,17 +677,9 @@
                     <thead>
                         <tr>
                             @foreach($entity->columns as $column)
-                            <th @click="setSort('{{ $column->slug }}')" class="col-{{ $column->slug }}" style="cursor: pointer;">
-                                {{ $column->name }}
-                                @if($column->is_sortable)
-                                <template x-if="sortBy === '{{ $column->slug }}'">
-                                    <i class="fas" :class="sortDir === 'asc' ? 'fa-caret-up' : 'fa-caret-down'"></i>
-                                </template>
-                                <template x-if="sortBy !== '{{ $column->slug }}'">
-                                    <i class="fas fa-sort" style="opacity: 0.3;"></i>
-                                </template>
-                                @endif
-                            </th>
+                                <th class="col-{{ $column->slug }}">
+                                    {{ $column->name }}
+                                </th>
                             @endforeach
                         </tr>
                     </thead>
@@ -686,9 +690,9 @@
             </div>
 
             @if($rows->count() > 0)
-            <div class="pagination-wrapper">
-                {{ $rows->appends(['lang' => $currentLang])->links() }}
-            </div>
+                <div class="pagination-wrapper">
+                    {{ $rows->appends(['lang' => $currentLang])->links() }}
+                </div>
             @endif
         </div>
     </section>
@@ -720,7 +724,13 @@
                 filterIndexing: '{{ request("filter_indexing") }}',
                 loading: false,
 
+                handleSortChange() {
+                    this.filterTable();
+                },
+
                 setSort(column, direction = null) {
+                    // Deprecated: Sorting now handled via dropdown
+                    /*
                     if (direction) {
                         this.sortBy = column;
                         this.sortDir = direction;
@@ -733,6 +743,7 @@
                         }
                     }
                     this.filterTable();
+                    */
                 },
 
                 resetFilters() {

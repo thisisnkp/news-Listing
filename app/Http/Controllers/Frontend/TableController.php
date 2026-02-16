@@ -31,9 +31,11 @@ class TableController extends Controller
     {
         $package = Package::where('slug', $slug)
             ->active()
-            ->with(['plans' => function ($q) {
-                $q->active()->ordered();
-            }])
+            ->with([
+                'plans' => function ($q) {
+                    $q->active()->ordered();
+                }
+            ])
             ->firstOrFail();
 
         // Check if private package requires token
@@ -69,9 +71,11 @@ class TableController extends Controller
     {
         $plan = Plan::where('slug', $slug)
             ->active()
-            ->with(['columns' => function ($q) {
-                $q->ordered();
-            }])
+            ->with([
+                'columns' => function ($q) {
+                    $q->ordered();
+                }
+            ])
             ->firstOrFail();
 
         // Get all available PUBLIC packages for navigation
@@ -95,9 +99,11 @@ class TableController extends Controller
     {
         $plan = Plan::where('slug', $slug)
             ->active()
-            ->with(['columns' => function ($q) {
-                $q->ordered();
-            }])
+            ->with([
+                'columns' => function ($q) {
+                    $q->ordered();
+                }
+            ])
             ->firstOrFail();
 
         $currentLang = $request->input('lang', Language::getDefault()?->code ?? 'en');
@@ -114,9 +120,11 @@ class TableController extends Controller
     {
         $plan = Plan::where('slug', $slug)
             ->active()
-            ->with(['columns' => function ($q) {
-                $q->ordered();
-            }])
+            ->with([
+                'columns' => function ($q) {
+                    $q->ordered();
+                }
+            ])
             ->firstOrFail();
 
         $defaultLanguage = Language::getDefault();
@@ -128,7 +136,7 @@ class TableController extends Controller
         $headers = $plan->columns->pluck('name')->toArray();
 
         $csvContent = implode(',', array_map(function ($h) {
-            return '"' . str_replace('"', '""', (string)$h) . '"';
+            return '"' . str_replace('"', '""', (string) $h) . '"';
         }, $headers)) . "\n";
 
         foreach ($rows as $row) {
@@ -141,7 +149,7 @@ class TableController extends Controller
                 if (is_array($value)) {
                     $value = implode(', ', $value);
                 } elseif (!is_string($value)) {
-                    $value = (string)$value;
+                    $value = (string) $value;
                 }
 
                 // Handle button type or any text|url format - export only the URL link
@@ -177,9 +185,11 @@ class TableController extends Controller
     {
         $package = Package::where('slug', $slug)
             ->active()
-            ->with(['columns' => function ($q) {
-                $q->ordered();
-            }])
+            ->with([
+                'columns' => function ($q) {
+                    $q->ordered();
+                }
+            ])
             ->firstOrFail();
 
         // Check if private package requires token
@@ -263,7 +273,7 @@ class TableController extends Controller
 
         $search = request('search');
         $sortBy = request('sort_by');
-        $sortDir = request('sort_dir', 'asc');
+        // $sortDir = request('sort_dir', 'asc'); // Removed default here to handle specific cases
         $priceMin = request('price_min');
         $priceMax = request('price_max');
 
@@ -310,9 +320,9 @@ class TableController extends Controller
         if ($filterDA) {
             $rows = $rows->filter(function ($row) use ($filterDA, $langCode) {
                 $data = $row->getTranslatedData($langCode);
-                $da = (int)($data['da'] ?? 0);
+                $da = (int) ($data['da'] ?? 0);
                 [$min, $max] = explode('-', $filterDA);
-                return $da >= (int)$min && $da <= (int)$max;
+                return $da >= (int) $min && $da <= (int) $max;
             });
         }
 
@@ -320,9 +330,9 @@ class TableController extends Controller
         if ($filterDR) {
             $rows = $rows->filter(function ($row) use ($filterDR, $langCode) {
                 $data = $row->getTranslatedData($langCode);
-                $dr = (int)($data['dr'] ?? 0);
+                $dr = (int) ($data['dr'] ?? 0);
                 [$min, $max] = explode('-', $filterDR);
-                return $dr >= (int)$min && $dr <= (int)$max;
+                return $dr >= (int) $min && $dr <= (int) $max;
             });
         }
 
@@ -362,10 +372,45 @@ class TableController extends Controller
 
         // Apply sorting
         if ($sortBy) {
-            $rows = $rows->sortBy(function ($row) use ($sortBy, $langCode) {
-                $data = $row->getTranslatedData($langCode);
-                return $data[$sortBy] ?? '';
-            }, SORT_REGULAR, $sortDir === 'desc');
+            if ($sortBy === 'price_high_low') {
+                $rows = $rows->sortByDesc(function ($row) use ($langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return (float) ($data['price'] ?? 0);
+                });
+            } elseif ($sortBy === 'price_low_high') {
+                $rows = $rows->sortBy(function ($row) use ($langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return (float) ($data['price'] ?? 0);
+                });
+            } elseif ($sortBy === 'recently_added') {
+                $rows = $rows->sortByDesc('created_at');
+            } elseif ($sortBy === 'z_a') {
+                // Determine the first sorting column (usually Name)
+                $firstColumn = $plan->columns()->ordered()->first();
+                $sortColumn = $firstColumn ? $firstColumn->slug : 'id';
+                $rows = $rows->sortByDesc(function ($row) use ($sortColumn, $langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return $data[$sortColumn] ?? '';
+                }, SORT_NATURAL | SORT_FLAG_CASE);
+            } elseif ($sortBy === 'a_z') {
+                // Determine the first sorting column (usually Name)
+                $firstColumn = $plan->columns()->ordered()->first();
+                $sortColumn = $firstColumn ? $firstColumn->slug : 'id';
+                $rows = $rows->sortBy(function ($row) use ($sortColumn, $langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return $data[$sortColumn] ?? '';
+                }, SORT_NATURAL | SORT_FLAG_CASE);
+            } else {
+                // Fallback to generic sort if passed directly (e.g. from column click)
+                $sortDir = request('sort_dir', 'asc');
+                $rows = $rows->sortBy(function ($row) use ($sortBy, $langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return $data[$sortBy] ?? '';
+                }, SORT_NATURAL | SORT_FLAG_CASE, $sortDir === 'desc');
+            }
+        } else {
+            // Default sort (by order) is applied by default in query, but if we need a safe fallback:
+            $rows = $rows->sortBy('order');
         }
 
         // Paginate manually
@@ -393,7 +438,7 @@ class TableController extends Controller
 
         $search = request('search');
         $sortBy = request('sort_by');
-        $sortDir = request('sort_dir', 'asc');
+        // $sortDir = request('sort_dir', 'asc');
 
         // Get all rows first (for filtering by translated content)
         $rows = $query->get();
@@ -432,7 +477,7 @@ class TableController extends Controller
                     $numValue = (int) $cellValue;
                     if (strpos($filterValue, '-') !== false) {
                         [$min, $max] = explode('-', $filterValue);
-                        return $numValue >= (int)$min && $numValue <= (int)$max;
+                        return $numValue >= (int) $min && $numValue <= (int) $max;
                     }
                     return $numValue == (int) $filterValue;
                 } elseif ($column->type === 'dropdown') {
@@ -447,10 +492,44 @@ class TableController extends Controller
 
         // Apply sorting
         if ($sortBy) {
-            $rows = $rows->sortBy(function ($row) use ($sortBy, $langCode) {
-                $data = $row->getTranslatedData($langCode);
-                return $data[$sortBy] ?? '';
-            }, SORT_REGULAR, $sortDir === 'desc');
+            if ($sortBy === 'price_high_low') {
+                $rows = $rows->sortByDesc(function ($row) use ($langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return (float) ($data['price'] ?? 0);
+                });
+            } elseif ($sortBy === 'price_low_high') {
+                $rows = $rows->sortBy(function ($row) use ($langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return (float) ($data['price'] ?? 0);
+                });
+            } elseif ($sortBy === 'recently_added') {
+                $rows = $rows->sortByDesc('created_at');
+            } elseif ($sortBy === 'z_a') {
+                // Determine the first sorting column (usually Name)
+                $firstColumn = $columns->first();
+                $sortColumn = $firstColumn ? $firstColumn->slug : 'id';
+                $rows = $rows->sortByDesc(function ($row) use ($sortColumn, $langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return $data[$sortColumn] ?? '';
+                }, SORT_NATURAL | SORT_FLAG_CASE);
+            } elseif ($sortBy === 'a_z') {
+                // Determine the first sorting column (usually Name)
+                $firstColumn = $columns->first();
+                $sortColumn = $firstColumn ? $firstColumn->slug : 'id';
+                $rows = $rows->sortBy(function ($row) use ($sortColumn, $langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return $data[$sortColumn] ?? '';
+                }, SORT_NATURAL | SORT_FLAG_CASE);
+            } else {
+                // Fallback to generic sort
+                $sortDir = request('sort_dir', 'asc');
+                $rows = $rows->sortBy(function ($row) use ($sortBy, $langCode) {
+                    $data = $row->getTranslatedData($langCode);
+                    return $data[$sortBy] ?? '';
+                }, SORT_REGULAR, $sortDir === 'desc');
+            }
+        } else {
+            $rows = $rows->sortBy('order');
         }
 
         // Paginate manually
