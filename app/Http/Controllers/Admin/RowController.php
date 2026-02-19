@@ -32,9 +32,29 @@ class RowController extends Controller
             });
         }
 
-        $rows = $query->ordered()->paginate(20)->withQueryString();
-        $languages = Language::active()->get();
+        // Fetch all rows and sort alphabetically by the first column
+        $allRows = $query->get();
+        $firstColumn = $columns->first();
         $defaultLanguage = Language::getDefault();
+        $langCode = $defaultLanguage?->code ?? 'en';
+
+        $sortedRows = $allRows->sortBy(function ($row) use ($firstColumn, $langCode) {
+            $data = $row->getTranslatedData($langCode);
+            return $firstColumn ? strtolower($data[$firstColumn->slug] ?? '') : '';
+        }, SORT_NATURAL | SORT_FLAG_CASE);
+
+        // Manual pagination
+        $perPage = 20;
+        $page = $request->input('page', 1);
+        $rows = new \Illuminate\Pagination\LengthAwarePaginator(
+            $sortedRows->forPage($page, $perPage),
+            $sortedRows->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $languages = Language::active()->get();
 
         return view('admin.rows.index', compact('plan', 'columns', 'rows', 'languages', 'defaultLanguage', 'search'));
     }
@@ -61,9 +81,29 @@ class RowController extends Controller
             });
         }
 
-        $rows = $query->ordered()->paginate(20)->withQueryString();
-        $languages = Language::active()->get();
+        // Fetch all rows and sort alphabetically by the first column
+        $allRows = $query->get();
+        $firstColumn = $columns->first();
         $defaultLanguage = Language::getDefault();
+        $langCode = $defaultLanguage?->code ?? 'en';
+
+        $sortedRows = $allRows->sortBy(function ($row) use ($firstColumn, $langCode) {
+            $data = $row->getTranslatedData($langCode);
+            return $firstColumn ? strtolower($data[$firstColumn->slug] ?? '') : '';
+        }, SORT_NATURAL | SORT_FLAG_CASE);
+
+        // Manual pagination
+        $perPage = 20;
+        $page = $request->input('page', 1);
+        $rows = new \Illuminate\Pagination\LengthAwarePaginator(
+            $sortedRows->forPage($page, $perPage),
+            $sortedRows->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $languages = Language::active()->get();
 
         return view('admin.rows.index_package', compact('package', 'columns', 'rows', 'languages', 'defaultLanguage', 'search'));
     }

@@ -409,8 +409,13 @@ class TableController extends Controller
                 }, SORT_NATURAL | SORT_FLAG_CASE, $sortDir === 'desc');
             }
         } else {
-            // Default sort (by order) is applied by default in query, but if we need a safe fallback:
-            $rows = $rows->sortBy('order');
+            // Default sort: alphabetical by first column (A→Z)
+            $firstColumn = $plan->columns()->ordered()->first();
+            $sortColumn = $firstColumn ? $firstColumn->slug : 'id';
+            $rows = $rows->sortBy(function ($row) use ($sortColumn, $langCode) {
+                $data = $row->getTranslatedData($langCode);
+                return $data[$sortColumn] ?? '';
+            }, SORT_NATURAL | SORT_FLAG_CASE);
         }
 
         // Paginate manually
@@ -529,7 +534,13 @@ class TableController extends Controller
                 }, SORT_REGULAR, $sortDir === 'desc');
             }
         } else {
-            $rows = $rows->sortBy('order');
+            // Default sort: alphabetical by first column (A→Z)
+            $firstColumn = $columns->first();
+            $sortColumn = $firstColumn ? $firstColumn->slug : 'id';
+            $rows = $rows->sortBy(function ($row) use ($sortColumn, $langCode) {
+                $data = $row->getTranslatedData($langCode);
+                return $data[$sortColumn] ?? '';
+            }, SORT_NATURAL | SORT_FLAG_CASE);
         }
 
         // Paginate manually

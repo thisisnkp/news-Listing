@@ -23,9 +23,7 @@ $entity = $package;
         <button type="button" class="btn btn-outline-danger" id="bulkDeleteBtn" style="display: none;">
             <i class="fas fa-trash me-2"></i>Delete Selected
         </button>
-        <button type="button" class="btn btn-outline-secondary" id="sortAlphaBtn">
-            <i class="fas fa-sort-alpha-down me-2"></i>Sort Alphabetically
-        </button>
+
         <a href="{{ route('admin.columns.index.package', $package) }}" class="btn btn-outline-primary">
             <i class="fas fa-columns me-2"></i>Manage Columns
         </a>
@@ -98,7 +96,6 @@ $entity = $package;
                     <tr data-row-id="{{ $row->id }}">
                         <td><input type="checkbox" class="row-checkbox" value="{{ $row->id }}"></td>
                         <td>
-                            <i class="fas fa-grip-vertical text-muted me-2" style="cursor: move;"></i>
                             {{ $rows->firstItem() + $loop->index }}
                         </td>
                         @foreach($columns as $column)
@@ -380,33 +377,7 @@ $entity = $package;
 @endsection
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 <script>
-    // Drag and Drop
-    const sortableList = document.getElementById('sortableRows');
-    if (sortableList) {
-        new Sortable(sortableList, {
-            animation: 150,
-            handle: '.fa-grip-vertical',
-            onEnd: function() {
-                const order = [];
-                document.querySelectorAll('#sortableRows tr').forEach((row, index) => {
-                    order.push(row.dataset.rowId);
-                    row.querySelector('.fa-grip-vertical').nextSibling.textContent = index + 1;
-                });
-
-                fetch('{{ route("admin.rows.reorder") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ order: order })
-                });
-            }
-        });
-    }
-
     // Bulk Delete
     const selectAll = document.getElementById('selectAll');
     const rowCheckboxes = document.querySelectorAll('.row-checkbox');
@@ -442,31 +413,6 @@ $entity = $package;
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ ids: ids })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert(data.message);
-                }
-            });
-        });
-    }
-
-    // Sort Alphabetically
-    const sortAlphaBtn = document.getElementById('sortAlphaBtn');
-    if (sortAlphaBtn) {
-        sortAlphaBtn.addEventListener('click', function() {
-            if (!confirm('This will reorder all rows alphabetically based on the first column. Continue?')) return;
-
-            fetch('{{ route("admin.rows.sort_alphabetically") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ package_id: '{{ $package->id }}' })
             })
             .then(res => res.json())
             .then(data => {
