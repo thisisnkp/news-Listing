@@ -20,6 +20,10 @@ $entity = $package;
         </nav>
     </div>
     <div class="btn-group">
+        <button type="button" class="btn btn-outline-danger" id="bulkDeleteBtn" style="display: none;">
+            <i class="fas fa-trash me-2"></i>Delete Selected
+        </button>
+
         <a href="{{ route('admin.columns.index.package', $package) }}" class="btn btn-outline-primary">
             <i class="fas fa-columns me-2"></i>Manage Columns
         </a>
@@ -76,6 +80,7 @@ $entity = $package;
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
+                        <th style="width: 40px"><input type="checkbox" id="selectAll"></th>
                         <th style="width: 60px">S.No</th>
                         @foreach($columns as $column)
                         <th>{{ $column->name }}</th>
@@ -83,13 +88,16 @@ $entity = $package;
                         <th style="width: 120px">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="sortableRows">
                     @foreach($rows as $row)
                     @php
                     $data = $row->getTranslatedData($defaultLanguage?->code ?? 'en');
                     @endphp
                     <tr data-row-id="{{ $row->id }}">
-                        <td>{{ $rows->firstItem() + $loop->index }}</td>
+                        <td><input type="checkbox" class="row-checkbox" value="{{ $row->id }}"></td>
+                        <td>
+                            {{ $rows->firstItem() + $loop->index }}
+                        </td>
                         @foreach($columns as $column)
                         <td class="editable-cell"
                             data-column="{{ $column->slug }}"
@@ -370,6 +378,54 @@ $entity = $package;
 
 @push('scripts')
 <script>
+    // Bulk Delete
+    const selectAll = document.getElementById('selectAll');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+    function toggleBulkDeleteBtn() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        bulkDeleteBtn.style.display = checkedCount > 0 ? 'block' : 'none';
+        bulkDeleteBtn.textContent = `Delete Selected (${checkedCount})`;
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            rowCheckboxes.forEach(cb => cb.checked = this.checked);
+            toggleBulkDeleteBtn();
+        });
+    }
+
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', toggleBulkDeleteBtn);
+    });
+
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function() {
+            if (!confirm('Are you sure you want to delete selected rows?')) return;
+
+            const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+
+            fetch('{{ route("admin.rows.bulk_destroy") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    }
+
+
     // Edit Row
     document.querySelectorAll('.edit-row').forEach(btn => {
         btn.addEventListener('click', function() {
