@@ -2,318 +2,294 @@
 <html lang="{{ app()->getLocale() }}">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $package->name }} - RV Rising Media</title>
+    <title>{{ $package->name }} | RV Rising Media</title>
     <meta name="description" content="{{ $package->remark ?? 'View ' . $package->name }}">
 
-    @if($favicon = App\Models\SiteSetting::getFavicon())
-        <link rel="icon" href="{{ $favicon }}">
-    @endif
+    @include('frontend.partials.head')
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts - Clean and Professional -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    <!-- Alpine.js -->
+    {{-- Alpine.js for inline filter/sort reactivity --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
-        :root {
-            --primary: #1a1a2e;
-            --primary-light: #16213e;
-            --accent: #e94560;
-            --accent-hover: #d63854;
-            --bg-light: #f8f9fa;
-            --bg-white: #ffffff;
-            --text-dark: #1a1a2e;
-            --text-muted: #6c757d;
-            --border-color: #e9ecef;
+        body { background: #f7f8fa; }
+
+        /* Unified toolbar — title + filters live in ONE compact card */
+        .main-content { padding: 16px 0 36px; }
+
+        .page-toolbar {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-toolbar::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: var(--gradient);
+            border-radius: var(--radius-lg) 0 0 var(--radius-lg);
         }
 
-        * {
+        .page-toolbar-head {
+            padding: 11px 18px 10px 22px;
+        }
+        .page-toolbar-head .crumb {
+            font-size: 11.5px;
+            color: var(--gray);
+            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+        }
+        .page-toolbar-head .crumb a { color: var(--primary); font-weight: 600; text-decoration: none; }
+        .page-toolbar-head .crumb a:hover { text-decoration: underline; }
+        .page-toolbar-head h1 {
+            color: var(--dark);
+            font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+            line-height: 1.2;
+            margin: 0;
+        }
+        .page-toolbar-head .text-muted {
+            font-size: 0.82rem;
+            margin: 3px 0 0 !important;
+            color: var(--gray);
+        }
+
+        .page-toolbar-divider {
+            height: 1px;
+            background: var(--border);
+            margin-left: 18px;
+        }
+
+        .page-toolbar-filters {
+            padding: 9px 18px 11px 22px;
+        }
+        .page-toolbar-filters .row > [class*="col-"] { padding-top: 4px; padding-bottom: 4px; }
+        .filters-card .search-box { position: relative; }
+        .filters-card .search-box i {
+            position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%); color: var(--gray);
+        }
+        .filters-card .search-input {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px 10px 38px;
+            width: 100%;
+            font-size: 0.92rem;
             font-family: 'Poppins', sans-serif;
         }
-
-        body {
-            background: #f5f5f5;
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .site-header {
-            background: var(--primary);
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .site-header .logo {
-            color: white;
-            font-weight: 700;
-            font-size: 1.5rem;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .site-header .logo:hover {
-            color: var(--accent);
-        }
-
-        .site-header .logo img {
-            height: 40px;
-        }
-
-        .nav-link-custom {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-link-custom:hover {
-            color: var(--accent);
-        }
-
-        /* Page Title */
-        .page-title-section {
-            background: white;
-            padding: .5rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .page-title-section h1 {
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 0.5rem;
-            font-size: 1.75rem;
-        }
-
-        .page-title-section .breadcrumb {
-            margin-bottom: 0;
-            font-size: 0.9rem;
-        }
-
-        .page-title-section .breadcrumb a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        /* Main Content */
-        .main-content {
-            padding: .5rem 0;
-        }
-
-        /* Filters Card */
-        .filters-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-            border: 1px solid var(--border-color);
-        }
-
-        .search-input {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0.6rem 1rem 0.6rem 2.5rem;
-            width: 100%;
-            font-size: 0.9rem;
-        }
-
-        .search-input:focus {
+        .filters-card .search-input:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(230,57,70,0.12);
         }
-
-        .search-box {
-            position: relative;
+        .filters-card .form-select {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.88rem;
+            border-color: var(--border);
         }
-
-        .search-box i {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
+        .filters-card .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(230,57,70,0.12);
         }
-
         .filter-btn {
-            background: var(--bg-light);
-            border: 1px solid var(--border-color);
-            color: var(--text-dark);
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
+            background: var(--light);
+            border: 1px solid var(--border);
+            color: var(--dark);
+            border-radius: 8px;
+            padding: 8px 14px;
             font-size: 0.85rem;
             font-weight: 500;
-            transition: all 0.2s;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
         }
-
-        .filter-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
+        .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-order {
+            background: var(--gradient);
+            color: var(--white);
+            border: none;
+            border-radius: 50px;
+            padding: 9px 22px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+            box-shadow: 0 6px 18px rgba(230,57,70,0.3);
         }
-
-        .filter-btn.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
+        .btn-order:hover {
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(230,57,70,0.4);
         }
+        .btn-action {
+            background: var(--gradient);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 0.82rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+        .btn-action:hover { color: var(--white); transform: translateY(-2px); }
 
-        /* Table Card */
         .table-card {
-            background: white;
-            border-radius: 16px;
+            background: var(--white);
+            border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
         }
-
         .table-scroll {
             overflow-x: auto;
             max-height: 75vh;
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 #f1f5f9;
         }
+        .table-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+        .table-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-        .table-scroll::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-
-        .table-scroll::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        .table-scroll::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        /* Modern Table */
         .data-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            font-size: 0.95rem;
+            font-size: 0.93rem;
+            font-family: 'Poppins', sans-serif;
         }
-
         .data-table thead {
-            background: linear-gradient(135deg, var(--primary) 0%, #243b55 100%);
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            background: var(--gradient-dark);
+            position: sticky; top: 0; z-index: 10;
         }
-
         .data-table th {
-            padding: 1.1rem 1.5rem;
+            padding: 14px 18px;
             text-align: left;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #ffffff;
+            color: var(--white);
             border: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            border-right: 1px solid rgba(255,255,255,0.15);
             white-space: nowrap;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
-
-        .data-table th:last-child {
-            border-right: none;
-        }
-
+        .data-table th:last-child { border-right: none; }
         .data-table th:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 11;
+            position: sticky; left: 0; z-index: 11;
             background: inherit;
-            /* Inherit the gradient/color */
-            box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.1);
-            /* Subtle shadow separator */
+            box-shadow: 4px 0 6px -4px rgba(0,0,0,0.1);
         }
-
-        /* Ensure gradient continues correctly on sticky header */
         .data-table th:first-child::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, var(--primary) 0%, #1e3246 100%);
-            /* Slightly lighter shade match */
-            z-index: -1;
+            content: ''; position: absolute; inset: 0;
+            background: var(--gradient-dark); z-index: -1;
         }
 
         .data-table tbody tr {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #ffffff;
+            transition: var(--transition);
+            background: var(--white);
         }
-
-        .data-table tbody tr:nth-child(even) {
-            background: #f1f5f9;
-            /* Slate 100 - Distinct alternate color */
-        }
-
+        .data-table tbody tr:nth-child(even) { background: #f8fafc; }
         .data-table tbody tr:hover {
-            background: #e2e8f0;
-            /* Slate 200 - Clearly darker hover */
+            background: #fef3f4;
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 5;
-            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(230,57,70,0.08);
+            z-index: 5; position: relative;
         }
-
         .data-table td {
-            padding: 1.1rem 1.5rem;
+            padding: 14px 18px;
             color: #334155;
-            /* Slate 700 */
             vertical-align: middle;
             border-bottom: 1px solid #f1f5f9;
             border-right: 1px solid #e2e8f0;
-            font-size: 0.925rem;
+            font-size: 0.9rem;
         }
+        .data-table td:last-child { border-right: none; }
+        .data-table tbody tr:last-child td { border-bottom: none; }
 
-        .data-table td:last-child {
-            border-right: none;
-        }
-
-        .data-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Column Config */
-        .col-name {
-            min-width: 350px;
-            padding-left: .7rem !important;
-        }
-
-        .col-remark {
-            min-width: 250px;
-        }
-
-        .col-price,
-        .col-backlink,
-        .col-dr {
-            text-align: center !important;
-        }
-
-        /* Ensure headers are also centered */
+        .col-name { padding-left: 16px !important; min-width: 320px; font-weight: 600; }
+        .col-remark { min-width: 240px; }
+        .col-price, .col-backlink, .col-dr { text-align: center !important; }
         .data-table th.col-price,
         .data-table th.col-backlink,
-        .data-table th.col-dr {
-            text-align: center !important;
+        .data-table th.col-dr { text-align: center !important; }
+
+        .data-table td:first-child {
+            position: sticky; left: 0; z-index: 5;
+            background: inherit;
+            font-weight: 600;
+            color: var(--dark);
+            box-shadow: 4px 0 6px -4px rgba(0,0,0,0.05);
         }
+        .data-table tbody tr:hover td:first-child {
+            border-left: 4px solid var(--primary);
+            padding-left: calc(16px - 4px);
+            color: var(--primary);
+        }
+
+        .price-cell { color: var(--primary-dark); font-weight: 700; }
+
+        .pagination-wrapper {
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid var(--border);
+        }
+        .pagination .page-link {
+            border: 1px solid var(--border);
+            color: var(--dark);
+            border-radius: 6px;
+            margin: 0 2px;
+            padding: 6px 12px;
+            font-size: 0.88rem;
+        }
+        .pagination .page-link:hover { border-color: var(--primary); color: var(--primary); }
+        .pagination .page-item.active .page-link {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--gray);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 14px;
+            opacity: 0.5;
+            color: var(--primary);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .spinner {
+            width: 42px; height: 42px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
             .col-name {
@@ -323,405 +299,204 @@
                 white-space: normal;
                 word-wrap: break-word;
             }
-        }
-
-        .data-table td:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 5;
-            background: inherit;
-            /* Matches row bg */
-            font-weight: 600;
-            color: var(--primary);
-            box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.05);
-            /* Separator shadow */
-        }
-
-        /* Accent left border on hover */
-        .data-table tbody tr:hover td:first-child {
-            border-left: 4px solid var(--accent);
-            padding-left: calc(1.5rem - 4px);
-            color: var(--accent);
-        }
-
-        /* Action Button */
-        .btn-action {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            transition: background 0.2s;
-        }
-
-        .btn-action:hover {
-            background: var(--accent-hover);
-            color: white;
-        }
-
-        /* Order Button */
-        .btn-order {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-        }
-
-        .btn-order:hover {
-            background: var(--accent-hover);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Pagination */
-        .pagination-wrapper {
-            padding: 1rem;
-            display: flex;
-            justify-content: center;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .pagination .page-link {
-            border: 1px solid var(--border-color);
-            color: var(--text-dark);
-            border-radius: 4px;
-            margin: 0 2px;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-        }
-
-        .pagination .page-item.active .page-link {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-muted);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        /* Footer */
-        .site-footer {
-            background: var(--primary);
-            color: rgba(255, 255, 255, 0.7);
-            padding: 1.5rem 0;
-            margin-top: 2rem;
-        }
-
-        .site-footer a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        /* Loading */
-        .loading-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
+            .data-table th, .data-table td {
+                padding: 10px 8px;
+                font-size: 0.82rem;
             }
-        }
-
-        /* Language Dropdown */
-        .lang-btn {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 4px;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-        }
-
-        .lang-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .page-title-section h1 {
-                font-size: 1.4rem;
-            }
-
-            .data-table th,
-            .data-table td {
-                padding: 0.75rem 0.5rem;
-                font-size: 0.85rem;
-            }
-
-            .filters-card {
-                padding: 1rem;
-            }
-        }
-
-        /* Price highlight */
-        .price-cell {
-            color: #28a745;
-            font-weight: 600;
         }
     </style>
 </head>
 
 <body x-data="tableFilter()">
-    <!-- Header -->
-    <!-- Header -->
     @include('frontend.partials.header')
 
-    <!-- Page Title -->
-    <section class="page-title-section">
-        <div class="container">
-            <!-- <nav class="breadcrumb">
-                <a href="https://rvrising.com/">Home</a>
-                <span class="mx-2">/</span>
-                <span>{{ $package->name }}</span>
-            </nav> -->
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div>
+    <main class="site-main">
+        <section class="container main-content">
+            @php
+                $enabledFilters = $package->enabled_filters ?? ['da', 'dr', 'disclaimer', 'backlinks', 'indexing', 'sort_az', 'sort_za'];
+            @endphp
+
+            {{-- Unified toolbar: title + filters in one card --}}
+            <div class="page-toolbar">
+                <div class="page-toolbar-head">
+                    <div class="crumb"><a href="{{ url('/') }}">Pricing</a></div>
                     <h1>{{ $package->name }}</h1>
                     @if($package->remark)
                         <p class="text-muted mb-0">{{ $package->remark }}</p>
                     @endif
                 </div>
-                <!-- @if($package->order_button_link)
-                <a href="{{ $package->order_button_link }}" class="btn-order" target="_blank">
-                    <i class="fas fa-shopping-cart"></i> {{ $buttonName }}
-                </a>
-                @endif -->
-            </div>
-        </div>
-    </section>
 
-    <!-- Main Content -->
-    <section class="container main-content">
-        <!-- Filters -->
-        <div class="filters-card">
-            <div class="row g-3 align-items-center">
-                @php
-                    $enabledFilters = $package->enabled_filters ?? ['da', 'dr', 'disclaimer', 'backlinks', 'indexing', 'sort_az', 'sort_za'];
-                @endphp
-                <div class="col-lg-4">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" class="search-input" placeholder="Search..." x-model="search"
-                            @input.debounce.300ms="filterTable()">
+                <div class="page-toolbar-divider"></div>
+
+                <div class="page-toolbar-filters">
+                <div class="row g-3 align-items-center">
+                    <div class="col-lg-4">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" class="search-input" placeholder="Search..." x-model="search"
+                                @input.debounce.300ms="filterTable()">
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="d-flex flex-nowrap flex-md-wrap gap-2 justify-content-between justify-content-lg-end align-items-center">
+                            <select class="form-select w-auto flex-grow-1 flex-md-grow-0" x-model="sortBy" @change="handleSortChange()">
+                                <option value="">Sort By</option>
+                                <option value="a_z">A-Z</option>
+                                <option value="z_a">Z-A</option>
+                                <option value="price_high_low">Price High-Low</option>
+                                <option value="price_low_high">Price Low-High</option>
+                                <option value="recently_added">Recently Added</option>
+                            </select>
+
+                            <div class="d-flex gap-2">
+                                <button class="filter-btn" @click="resetFilters()" title="Reset">
+                                    <i class="fas fa-undo"></i><span class="d-none d-md-inline ms-1">Reset</span>
+                                </button>
+                                <a href="{{ route('package.export', $package->slug) }}?lang={{ $currentLang }}" class="filter-btn" title="Export">
+                                    <i class="fas fa-download"></i><span class="d-none d-md-inline ms-1">Export</span>
+                                </a>
+                            </div>
+
+                            @if($package->order_button_link)
+                                <a href="{{ $package->order_button_link }}" class="btn-order d-none d-md-inline-flex" target="_blank">
+                                    {{ $buttonName }}
+                                </a>
+                                <a href="{{ $package->order_button_link }}" class="btn-action d-inline-flex d-md-none" target="_blank">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-lg-8">
-                    <div
-                        class="d-flex flex-nowrap flex-md-wrap gap-2 justify-content-between justify-content-lg-end align-items-center">
-                        <select class="form-select w-auto flex-grow-1 flex-md-grow-0" x-model="sortBy"
-                            @change="handleSortChange()">
-                            <option value="">Sort By</option>
-                            <option value="a_z">A-Z</option>
-                            <option value="z_a">Z-A</option>
-                            <option value="price_high_low">Price High-Low</option>
-                            <option value="price_low_high">Price Low-High</option>
-                            <option value="recently_added">Recently Added</option>
-                        </select>
-
-                        <div class="d-flex gap-2">
-                            <button class="filter-btn" @click="resetFilters()" title="Reset">
-                                <i class="fas fa-undo"></i><span class="d-none d-md-inline ms-1">Reset</span>
-                            </button>
-                            <a href="{{ route('package.export', $package->slug) }}?lang={{ $currentLang }}"
-                                class="filter-btn" title="Export">
-                                <i class="fas fa-download"></i><span class="d-none d-md-inline ms-1">Export</span>
-                            </a>
-                        </div>
-
-                        @if($package->order_button_link)
-                            <a href="{{ $package->order_button_link }}" class="btn-order d-none d-md-inline-flex"
-                                target="_blank">
-                                {{ $buttonName }}
-                            </a>
-                            <a href="{{ $package->order_button_link }}" class="btn-action d-inline-flex d-md-none"
-                                target="_blank">
-                                <i class="fas fa-shopping-cart"></i>
-                            </a>
+                @if(in_array('da', $enabledFilters) || in_array('dr', $enabledFilters) || in_array('disclaimer', $enabledFilters) || in_array('backlinks', $enabledFilters) || in_array('indexing', $enabledFilters))
+                    <div class="row g-2 mt-2">
+                        @if(in_array('da', $enabledFilters))
+                            <div class="col-4 col-md-4 col-lg-2">
+                                <select class="form-select form-select-sm" x-model="filterDA" @change="filterTable()">
+                                    <option value="">All DA</option>
+                                    <option value="0-20">DA 0-20</option>
+                                    <option value="21-40">DA 21-40</option>
+                                    <option value="41-60">DA 41-60</option>
+                                    <option value="61-80">DA 61-80</option>
+                                    <option value="81-100">DA 81+</option>
+                                </select>
+                            </div>
+                        @endif
+                        @if(in_array('dr', $enabledFilters))
+                            <div class="col-4 col-md-4 col-lg-2">
+                                <select class="form-select form-select-sm" x-model="filterDR" @change="filterTable()">
+                                    <option value="">All DR</option>
+                                    <option value="0-20">DR 0-20</option>
+                                    <option value="21-40">DR 21-40</option>
+                                    <option value="41-60">DR 41-60</option>
+                                    <option value="61-80">DR 61-80</option>
+                                    <option value="81-100">DR 81+</option>
+                                </select>
+                            </div>
+                        @endif
+                        @if(in_array('disclaimer', $enabledFilters))
+                            <div class="col-4 col-md-4 col-lg-2">
+                                <select class="form-select form-select-sm" x-model="filterDisclaimer" @change="filterTable()">
+                                    <option value="">Disclaimer</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        @endif
+                        @if(in_array('backlinks', $enabledFilters))
+                            <div class="col-4 col-md-4 col-lg-2">
+                                <select class="form-select form-select-sm" x-model="filterBacklink" @change="filterTable()">
+                                    <option value="">Backlinks</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        @endif
+                        @if(in_array('indexing', $enabledFilters))
+                            <div class="col-4 col-md-4 col-lg-2">
+                                <select class="form-select form-select-sm" x-model="filterIndexing" @change="filterTable()">
+                                    <option value="">Indexing</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
                         @endif
                     </div>
-                </div>
-            </div>
+                @endif
+                </div>{{-- /.page-toolbar-filters --}}
+            </div>{{-- /.page-toolbar --}}
 
-            <!-- Hardcoded Dropdown Filters matching admin settings -->
-            @if(in_array('da', $enabledFilters) || in_array('dr', $enabledFilters) || in_array('disclaimer', $enabledFilters) || in_array('backlinks', $enabledFilters) || in_array('indexing', $enabledFilters))
-                <div class="row g-2 mt-2">
-                    @if(in_array('da', $enabledFilters))
-                        <div class="col-4 col-md-4 col-lg-2">
-                            <select class="form-select form-select-sm" x-model="filterDA" @change="filterTable()">
-                                <option value="">All DA</option>
-                                <option value="0-20">DA 0-20</option>
-                                <option value="21-40">DA 21-40</option>
-                                <option value="41-60">DA 41-60</option>
-                                <option value="61-80">DA 61-80</option>
-                                <option value="81-100">DA 81+</option>
-                            </select>
-                        </div>
-                    @endif
-                    @if(in_array('dr', $enabledFilters))
-                        <div class="col-4 col-md-4 col-lg-2">
-                            <select class="form-select form-select-sm" x-model="filterDR" @change="filterTable()">
-                                <option value="">All DR</option>
-                                <option value="0-20">DR 0-20</option>
-                                <option value="21-40">DR 21-40</option>
-                                <option value="41-60">DR 41-60</option>
-                                <option value="61-80">DR 61-80</option>
-                                <option value="81-100">DR 81+</option>
-                            </select>
-                        </div>
-                    @endif
-                    @if(in_array('disclaimer', $enabledFilters))
-                        <div class="col-4 col-md-4 col-lg-2">
-                            <select class="form-select form-select-sm" x-model="filterDisclaimer" @change="filterTable()">
-                                <option value="">Disclaimer</option>
-                                <option value="Yes">Yes</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                    @endif
-                    @if(in_array('backlinks', $enabledFilters))
-                        <div class="col-4 col-md-4 col-lg-2">
-                            <select class="form-select form-select-sm" x-model="filterBacklink" @change="filterTable()">
-                                <option value="">Backlinks</option>
-                                <option value="Yes">Yes</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                    @endif
-                    @if(in_array('indexing', $enabledFilters))
-                        <div class="col-4 col-md-4 col-lg-2">
-                            <select class="form-select form-select-sm" x-model="filterIndexing" @change="filterTable()">
-                                <option value="">Indexing</option>
-                                <option value="Yes">Yes</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                    @endif
-                </div>
-            @endif
-        </div>
+            <div class="table-card" style="position: relative;">
+                <template x-if="loading">
+                    <div class="loading-overlay">
+                        <div class="spinner"></div>
+                    </div>
+                </template>
 
-        <!-- Table -->
-        <div class="table-card" style="position: relative;">
-            <template x-if="loading">
-                <div class="loading-overlay">
-                    <div class="spinner"></div>
-                </div>
-            </template>
-
-            <div class="table-scroll">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            @foreach($columns as $column)
-                                <th class="col-{{ $column->slug }}">
-                                    {{ $column->name }}
-                                </th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($rows as $row)
-                            @php $data = $row->getTranslatedData($currentLang); @endphp
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead>
                             <tr>
                                 @foreach($columns as $column)
-                                    <td class="col-{{ $column->slug }}">
-                                        @if($column->type === 'currency')
-                                            <span class="price-cell">₹{{ number_format($data[$column->slug] ?? 0, 0) }}</span>
-                                        @elseif($column->type === 'button')
-                                            @php
-                                                $btnData = $data[$column->slug] ?? '';
-                                                $parts = explode('|', $btnData);
-                                                $btnText = $parts[0] ?? 'View';
-                                                $btnLink = $parts[1] ?? '#';
-                                            @endphp
-                                            @if($btnLink && $btnLink !== '#')
-                                                <a href="{{ $btnLink }}" class="btn-action" target="_blank">
-                                                    {{ $btnText }} <i class="fas fa-external-link-alt"></i>
-                                                </a>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        @else
-                                            {{ $data[$column->slug] ?? '-' }}
-                                        @endif
-                                    </td>
+                                    <th class="col-{{ $column->slug }}">{{ $column->name }}</th>
                                 @endforeach
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ $columns->count() }}">
-                                    <div class="empty-state">
-                                        <i class="fas fa-search"></i>
-                                        <h5>No Results Found</h5>
-                                        <p>Try adjusting your filters</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            @if($rows->count() > 0)
-                <div class="pagination-wrapper">
-                    {{ $rows->appends(['lang' => $currentLang])->links() }}
+                        </thead>
+                        <tbody>
+                            @forelse($rows as $row)
+                                @php $data = $row->getTranslatedData($currentLang); @endphp
+                                <tr>
+                                    @foreach($columns as $column)
+                                        <td class="col-{{ $column->slug }}">
+                                            @if($column->type === 'currency')
+                                                <span class="price-cell">&#8377;{{ number_format($data[$column->slug] ?? 0, 0) }}</span>
+                                            @elseif($column->type === 'button')
+                                                @php
+                                                    $btnData = $data[$column->slug] ?? '';
+                                                    $parts = explode('|', $btnData);
+                                                    $btnText = $parts[0] ?? 'View';
+                                                    $btnLink = $parts[1] ?? '#';
+                                                @endphp
+                                                @if($btnLink && $btnLink !== '#')
+                                                    <a href="{{ $btnLink }}" class="btn-action" target="_blank">
+                                                        {{ $btnText }} <i class="fas fa-external-link-alt"></i>
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            @else
+                                                {{ $data[$column->slug] ?? '-' }}
+                                            @endif
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="{{ $columns->count() }}">
+                                        <div class="empty-state">
+                                            <i class="fas fa-search"></i>
+                                            <h5>No Results Found</h5>
+                                            <p>Try adjusting your filters</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-            @endif
-        </div>
-    </section>
 
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <p class="mb-0">© {{ date('Y') }} RV Rising Media. All rights reserved.</p>
-            <p class="mb-0">
-                <a href="https://rvrising.com/about-us/">About</a> ·
-                <a href="https://rvrising.com/pr-services/">Services</a> ·
-                <a href="https://rvrising.com/payment-details-for-rv-rising-entertainment/">Payment</a>
-            </p>
-        </div>
-    </footer>
+                @if($rows->count() > 0)
+                    <div class="pagination-wrapper">
+                        {{ $rows->appends(['lang' => $currentLang])->links() }}
+                    </div>
+                @endif
+            </div>
+        </section>
+    </main>
+
+    @include('frontend.partials.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -731,83 +506,53 @@
                 search: '{{ request("search") }}',
                 sortBy: '{{ request("sort_by") }}',
                 sortDir: '{{ request("sort_dir", "asc") }}',
-                // Hardcoded filter variables matching admin settings
                 filterDA: '{{ request("filter_da") }}',
                 filterDR: '{{ request("filter_dr") }}',
                 filterDisclaimer: '{{ request("filter_disclaimer") }}',
                 filterBacklink: '{{ request("filter_backlinks") }}',
                 filterIndexing: '{{ request("filter_indexing") }}',
-                // Dynamic filters object for any additional filterable columns
                 filters: {
                     @foreach($filterableColumns as $column)
                         '{{ $column->slug }}': '{{ request("filter_" . $column->slug) }}',
                     @endforeach
                 },
-        loading: false,
+                loading: false,
 
-            handleSortChange() {
-            this.filterTable();
-        },
+                handleSortChange() { this.filterTable(); },
+                setSort(column, direction = null) { /* sorting handled via dropdown */ },
 
-        setSort(column, direction = null) {
-            // Deprecated: Sorting now handled via dropdown
-            /*
-            if (direction) {
-                this.sortBy = column;
-                this.sortDir = direction;
-            } else {
-                if (this.sortBy === column) {
-                    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-                } else {
-                    this.sortBy = column;
+                resetFilters() {
+                    this.search = '';
+                    this.sortBy = '';
                     this.sortDir = 'asc';
+                    this.filterDA = '';
+                    this.filterDR = '';
+                    this.filterDisclaimer = '';
+                    this.filterBacklink = '';
+                    this.filterIndexing = '';
+                    for (let key in this.filters) { this.filters[key] = ''; }
+                    this.filterTable();
+                },
+
+                filterTable() {
+                    this.loading = true;
+                    const params = new URLSearchParams();
+                    params.set('lang', '{{ $currentLang }}');
+                    if (this.search) params.set('search', this.search);
+                    if (this.sortBy) params.set('sort_by', this.sortBy);
+                    if (this.sortDir) params.set('sort_dir', this.sortDir);
+                    if (this.filterDA) params.set('filter_da', this.filterDA);
+                    if (this.filterDR) params.set('filter_dr', this.filterDR);
+                    if (this.filterDisclaimer) params.set('filter_disclaimer', this.filterDisclaimer);
+                    if (this.filterBacklink) params.set('filter_backlinks', this.filterBacklink);
+                    if (this.filterIndexing) params.set('filter_indexing', this.filterIndexing);
+                    for (let key in this.filters) {
+                        if (this.filters[key]) {
+                            params.set('filter_' + key, this.filters[key]);
+                        }
+                    }
+                    window.location.href = '{{ route("package.show", $package->slug) }}?' + params.toString();
                 }
-            }
-            this.filterTable();
-            */
-        },
-
-        resetFilters() {
-            this.search = '';
-            this.sortBy = '';
-            this.sortDir = 'asc';
-            // Reset hardcoded filters
-            this.filterDA = '';
-            this.filterDR = '';
-            this.filterDisclaimer = '';
-            this.filterBacklink = '';
-            this.filterIndexing = '';
-            // Reset all dynamic filters
-            for (let key in this.filters) {
-                this.filters[key] = '';
-            }
-            this.filterTable();
-        },
-
-        filterTable() {
-            this.loading = true;
-            const params = new URLSearchParams();
-            params.set('lang', '{{ $currentLang }}');
-            if (this.search) params.set('search', this.search);
-            if (this.sortBy) params.set('sort_by', this.sortBy);
-            if (this.sortDir) params.set('sort_dir', this.sortDir);
-
-            // Add hardcoded filters to params
-            if (this.filterDA) params.set('filter_da', this.filterDA);
-            if (this.filterDR) params.set('filter_dr', this.filterDR);
-            if (this.filterDisclaimer) params.set('filter_disclaimer', this.filterDisclaimer);
-            if (this.filterBacklink) params.set('filter_backlinks', this.filterBacklink);
-            if (this.filterIndexing) params.set('filter_indexing', this.filterIndexing);
-
-            // Add all dynamic filters to params
-            for (let key in this.filters) {
-                if (this.filters[key]) {
-                    params.set('filter_' + key, this.filters[key]);
-                }
-            }
-
-            window.location.href = '{{ route("package.show", $package->slug) }}?' + params.toString();
-        }
             }
         }
     </script>

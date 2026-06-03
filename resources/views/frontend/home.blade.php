@@ -2,303 +2,219 @@
 <html lang="{{ app()->getLocale() }}">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>PR Pricing - RV Rising Media</title>
-    <meta name="description" content="{{ App\Models\SiteSetting::get('meta_description', 'Explore our PR and media packages') }}">
+    <title>PR Pricing | RV Rising Media</title>
+    <meta name="description" content="{{ App\Models\SiteSetting::get('meta_description', 'Explore our PR and media packages — transparent pricing from RV Rising Media.') }}">
 
-    @if($favicon = App\Models\SiteSetting::getFavicon())
-    <link rel="icon" href="{{ $favicon }}">
-    @endif
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    @include('frontend.partials.head')
 
     <style>
-        :root {
-            --header-bg: #1A1A2E;
-            --button-bg: #E94560;
-            --button-hover: #d63854;
-            --body-bg: #e6e6e6;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-        }
+        /* Page-specific overrides — uses main brand vars from style.css (--primary, --accent, --dark, etc.) */
+        body { background: #f7f8fa; }
 
-        * {
-            font-family: 'Poppins', sans-serif;
-        }
-
-        html,
-        body {
-            overflow-x: hidden;
-            max-width: 100%;
-        }
-
-        body {
-            background: var(--body-bg);
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .site-header {
-            background: var(--header-bg);
-            padding: 1rem 0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .site-header .logo {
-            color: white;
-            font-weight: 700;
-            font-size: 1.5rem;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-link-custom {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            margin-left: 1rem;
-            font-weight: 500;
-        }
-
-        .nav-link-custom:hover {
-            color: white;
-            text-decoration: underline;
-        }
-
-        /* Hero */
-        .hero-section {
-            background: transparent;
-            padding: 3rem 0;
+        .pricing-hero {
+            background: var(--gradient-dark);
+            color: var(--white);
             text-align: center;
-        }
-
-        .hero-section h1 {
-            font-weight: 700;
-            font-size: 2.25rem;
-            color: var(--header-bg);
-            margin-bottom: 0.75rem;
-        }
-
-        .hero-section p {
-            color: #666;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Main Content */
-        .main-content {
-            padding: 2rem 0;
-        }
-
-        /* Package Cards */
-        .package-card {
-            background: white;
-            border-radius: 16px;
+            padding: 70px 0 90px;
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+        }
+        .pricing-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(230,57,70,0.18), transparent 55%),
+                        radial-gradient(circle at 80% 70%, rgba(255,183,3,0.12), transparent 55%);
+            pointer-events: none;
+        }
+        .pricing-hero .container { position: relative; z-index: 1; }
+        .pricing-hero .eyebrow {
+            display: inline-block;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+            color: var(--accent);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .pricing-hero h1 {
+            color: var(--white);
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 14px;
+        }
+        .pricing-hero p {
+            color: rgba(255,255,255,0.8);
+            max-width: 640px;
+            margin: 0 auto;
+            font-size: 1.05rem;
+        }
+
+        .packages-section {
+            padding: 60px 0 80px;
+            margin-top: -40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .pkg-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
             height: 100%;
             display: flex;
             flex-direction: column;
-            border: none;
+            border: 1px solid var(--border);
         }
-
-        .package-card:hover {
-            transform: translateY(-5px);
+        .pkg-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(230,57,70,0.25);
         }
-
-        .package-card-header {
-            background-color: var(--header-bg);
-            color: white;
-            padding: 0.5rem 0.5rem;
+        .pkg-card-header {
+            background: var(--gradient);
+            color: var(--white);
+            padding: 16px 14px;
             text-align: center;
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
         }
-
-        .package-card-header h3 {
-            margin: 0;
-            font-size: 1rem;
+        .pkg-card-header h3 {
+            color: var(--white);
+            font-family: 'Fraunces', serif;
+            font-size: 1.15rem;
             font-weight: 700;
+            margin: 0;
+            line-height: 1.3;
         }
-
-        .package-card-body {
-            padding: .5rem .5rem 1.5rem;
+        .pkg-card-body {
+            padding: 22px 18px 24px;
             text-align: center;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: white;
+            background: var(--white);
         }
-
-        .package-card .remark {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
+        .pkg-card .remark {
+            color: var(--gray);
+            font-size: 0.93rem;
+            margin-bottom: 18px;
+            line-height: 1.55;
             flex-grow: 1;
         }
-
-        .package-meta {
-            margin-bottom: 1.5rem;
+        .pkg-meta {
+            margin-bottom: 18px;
         }
-
-        .package-meta .badge {
-            background: #f8f9fa;
-            color: var(--text-main);
+        .pkg-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fef3f4;
+            color: var(--primary-dark);
             font-weight: 600;
-            font-size: 0.85rem;
-            padding: 0.5rem 1rem;
-            border: 1px solid #eee;
+            font-size: 0.82rem;
+            padding: 6px 14px;
+            border: 1px solid rgba(230,57,70,0.18);
+            border-radius: 50px;
         }
-
-        .package-btn {
-            background: var(--button-bg);
-            color: white;
+        .pkg-btn {
+            background: var(--gradient);
+            color: var(--white);
             border: none;
             border-radius: 50px;
-            padding: 0.75rem 1rem;
+            padding: 11px 20px;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            transition: background-color 0.3s;
-            font-size: 0.8rem;
-            width: auto;
-            min-width: 140px;
+            gap: 8px;
+            transition: var(--transition);
+            font-size: 0.85rem;
+            box-shadow: 0 6px 18px rgba(230,57,70,0.3);
+            white-space: nowrap;
+        }
+        .pkg-btn:hover {
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(230,57,70,0.4);
         }
 
-        .package-btn:hover {
-            background: var(--button-hover);
-            color: white;
-        }
-
-        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 4rem 2rem;
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #eee;
+            padding: 60px 24px;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
         }
-
-        /* Footer */
-        .site-footer {
-            margin-top: 3rem;
-            text-align: center;
-            color: #6c757d;
-            padding: 2rem 0;
-            background: transparent;
-        }
-
-        .site-footer a {
-            color: var(--header-bg);
-            text-decoration: none;
-        }
-
-        /* Language Dropdown */
-        .lang-btn {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 4px;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-        }
-
-        .lang-btn:hover {
-            border-color: white;
-            color: white;
-            text-decoration: none;
-        }
+        .empty-state i { font-size: 3rem; color: var(--primary); opacity: 0.6; margin-bottom: 14px; }
+        .empty-state h3 { margin-bottom: 6px; }
 
         @media (max-width: 768px) {
-            .hero-section h1 {
-                font-size: 1.75rem;
-            }
+            .pricing-hero { padding: 50px 0 70px; }
+            .packages-section { padding: 40px 0 60px; }
         }
     </style>
 </head>
 
 <body>
-    <!-- Header -->
-    <!-- Header -->
     @include('frontend.partials.header')
 
-    <!-- Hero -->
-    <!-- <section class="hero-section">
-        <div class="container">
-            <h1>PR & Media Pricing</h1>
-            <p>Explore our packages and find the perfect solution for your PR and media needs</p>
-        </div>
-    </section> -->
-
-    <!-- Main Content -->
-    <section class="container main-content p-1 mt-2">
-        @if($packages->count() > 0)
-        <div class="row g-4 justify-content-center">
-            @foreach($packages as $package)
-            <div class="col-6 col-lg-4 col-xl-3">
-                <div class="package-card">
-                    <div class="package-card-header">
-                        <h3>{{ $package->name }}</h3>
-                    </div>
-
-                    <div class="package-card-body">
-                        @if($package->remark)
-                        <p class="remark">{{ $package->remark }}</p>
-                        @else
-                        <p class="remark">Discover the perfect plan for your needs.</p>
-                        @endif
-
-                        <div class="package-meta">
-                            @if($package->isMedia())
-                            <span class="badge"><i class="fas fa-table me-1"></i>Media List</span>
-                            @else
-                            <span class="badge"><i class="fas fa-layer-group me-1"></i>{{ $package->plans_count }} {{ Str::plural('Plan', $package->plans_count) }}</span>
-                            @endif
-                        </div>
-
-                        <a href="{{ route('package.show', $package->slug) }}" class="package-btn">
-                            View Details <i class="fa-solid fa-circle-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
+    <main class="site-main">
+        <section class="pricing-hero">
+            <div class="container">
+                <span class="eyebrow"><i class="fas fa-tag"></i> Transparent Pricing</span>
+                <h1>PR &amp; Media Packages</h1>
+                <p>Pick the package that fits your goals — every plan is backed by RV Rising Media's verified network of publishers, influencers and journalists.</p>
             </div>
-            @endforeach
-        </div>
-        @else
-        <div class="empty-state">
-            <i class="fas fa-box-open"></i>
-            <h3>No Packages Available</h3>
-            <p>Check back later for new packages.</p>
-        </div>
-        @endif
-    </section>
+        </section>
 
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <p class="mb-0">© {{ date('Y') }} RV Rising Media. All rights reserved.</p>
-            <p class="mb-0">
-                <a href="https://rvrising.com/about-us/">About</a> ·
-                <a href="https://rvrising.com/pr-services/">Services</a> ·
-                <a href="https://rvrising.com/payment-details-for-rv-rising-entertainment/">Payment</a>
-            </p>
-        </div>
-    </footer>
+        <section class="packages-section">
+            <div class="container">
+                @if($packages->count() > 0)
+                    <div class="row g-4 justify-content-center">
+                        @foreach($packages as $package)
+                            <div class="col-6 col-md-6 col-lg-4 col-xl-3">
+                                <div class="pkg-card">
+                                    <div class="pkg-card-header">
+                                        <h3>{{ $package->name }}</h3>
+                                    </div>
+                                    <div class="pkg-card-body">
+                                        <p class="remark">{{ $package->remark ?: 'Discover the perfect plan for your needs.' }}</p>
+
+                                        <div class="pkg-meta">
+                                            @if($package->isMedia())
+                                                <span class="pkg-badge"><i class="fas fa-table"></i> Media List</span>
+                                            @else
+                                                <span class="pkg-badge"><i class="fas fa-layer-group"></i> {{ $package->plans_count }} {{ Str::plural('Plan', $package->plans_count) }}</span>
+                                            @endif
+                                        </div>
+
+                                        <a href="{{ route('package.show', $package->slug) }}" class="pkg-btn">
+                                            View Details <i class="fa-solid fa-circle-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>No Packages Available</h3>
+                        <p>Check back later for new packages.</p>
+                    </div>
+                @endif
+            </div>
+        </section>
+    </main>
+
+    @include('frontend.partials.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -2,279 +2,212 @@
 <html lang="{{ app()->getLocale() }}">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $package->name }} - RV Rising Media</title>
+    <title>{{ $package->name }} | RV Rising Media</title>
     <meta name="description" content="{{ $package->remark ?? 'View plans for ' . $package->name }}">
 
-    @if($favicon = App\Models\SiteSetting::getFavicon())
-    <link rel="icon" href="{{ $favicon }}">
-    @endif
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    @include('frontend.partials.head')
 
     <style>
-        :root {
-            --header-bg: #1A1A2E;
-            /* Deep Navy from Home Page */
-            --button-bg: #E94560;
-            /* Reddish-Pink from Home Page */
-            --button-hover: #d63854;
-            --body-bg: #e6e6e6;
-            /* Light gray background */
-            --card-bg: #ffffff;
-            --text-main: #333333;
-        }
+        body { background: #f7f8fa; }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--body-bg);
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .site-header {
-            background: var(--header-bg);
-            padding: 1rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .site-header .logo {
-            color: white;
-            font-weight: 700;
-            font-size: 1.5rem;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-link-custom {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            margin-left: 1rem;
-            font-weight: 500;
-        }
-
-        .nav-link-custom:hover {
-            color: white;
-            text-decoration: underline;
-        }
-
-        /* Main Container */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem 3rem;
-        }
-
-        .page-title {
-            text-align: center;
-            margin-bottom: 3rem;
-            color: var(--header-bg);
-            font-weight: 700;
-        }
-
-        /* Reference Card Style */
-        .ref-card {
-            background: white;
-            border-radius: 16px;
+        .package-hero {
+            background: var(--gradient-dark);
+            color: var(--white);
+            padding: 60px 0 80px;
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+        }
+        .package-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(230,57,70,0.18), transparent 55%),
+                        radial-gradient(circle at 80% 70%, rgba(255,183,3,0.12), transparent 55%);
+            pointer-events: none;
+        }
+        .package-hero .container { position: relative; z-index: 1; text-align: center; }
+        .package-hero .crumb {
+            font-size: 13px;
+            opacity: 0.75;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .package-hero .crumb a {
+            color: var(--accent);
+        }
+        .package-hero h1 {
+            color: var(--white);
+            font-size: clamp(1.75rem, 4vw, 2.6rem);
+            margin-bottom: 12px;
+        }
+        .package-hero p {
+            color: rgba(255,255,255,0.8);
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .plans-section {
+            padding: 50px 0 80px;
+            margin-top: -40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .plan-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
             height: 100%;
             display: flex;
             flex-direction: column;
-            border: none;
+            border: 1px solid var(--border);
         }
-
-        .ref-card:hover {
-            transform: translateY(-5px);
+        .plan-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(230,57,70,0.25);
         }
-
-        .ref-card-header {
-            background-color: var(--header-bg);
-            color: white;
-            padding: 0.5rem 0.5rem;
+        .plan-card-header {
+            background: var(--gradient);
+            color: var(--white);
+            padding: 16px 14px;
             text-align: center;
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
         }
-
-        .ref-card-header h3 {
-            margin: 0;
-            font-size: 1rem;
+        .plan-card-header h3 {
+            color: var(--white);
+            font-family: 'Fraunces', serif;
+            font-size: 1.1rem;
             font-weight: 700;
+            margin: 0;
+            line-height: 1.3;
         }
-
-        .ref-card-body {
-            padding: .5rem .5rem;
+        .plan-card-body {
+            padding: 22px 18px 24px;
             text-align: center;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: white;
+            background: var(--white);
         }
-
-        .ref-description {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
-        }
-
-        .ref-price {
-            font-size: 1.5rem;
+        .plan-price {
+            font-family: 'Fraunces', serif;
+            font-size: 1.85rem;
             font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 0.5rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+            line-height: 1;
         }
-
-        .ref-meta {
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-            color: #555;
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 18px;
+            text-align: center;
+            width: 100%;
+        }
+        .plan-features li {
+            padding: 5px 0;
+            font-size: 0.88rem;
+            color: var(--gray);
+        }
+        .plan-features li.more {
+            color: var(--primary);
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            font-size: 0.82rem;
         }
-
-        /* Pill Button */
-        .ref-btn {
-            background-color: var(--button-bg);
-            color: white;
+        .plan-btn {
+            background: var(--gradient);
+            color: var(--white);
             text-decoration: none;
-            padding: 0.75rem 1rem;
+            padding: 11px 20px;
             border-radius: 50px;
-            /* Pill shape */
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: background-color 0.3s;
+            gap: 8px;
+            transition: var(--transition);
             margin-top: auto;
             border: none;
-            font-size: .8rem;
-        }
-
-        .ref-btn:hover {
-            background-color: var(--button-hover);
-            color: white;
-        }
-
-        .ref-btn-icon {
-            font-size: 1.2rem;
-        }
-
-        /* List for services if needed, kept hidden/minimal per image style or shown cleanly */
-        .ref-features {
-            list-style: none;
-            padding: 0;
-            /* margin: 0 0 1.5rem; */
-            text-align: left;
-            width: 100%;
-        }
-
-        .ref-features li {
-            padding: 0.25rem 0;
             font-size: 0.85rem;
-            color: #555;
-            text-align: center;
+            box-shadow: 0 6px 18px rgba(230,57,70,0.3);
+            white-space: nowrap;
         }
-
-        .lang-btn {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 4px;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-        }
-
-        .lang-btn:hover {
-            border-color: white;
-            color: white;
-            text-decoration: none;
+        .plan-btn:hover {
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(230,57,70,0.4);
         }
 
         @media (max-width: 768px) {
-            .main-container {
-                padding: 0 1rem 2rem;
-            }
+            .package-hero { padding: 50px 0 70px; }
+            .plans-section { padding: 30px 0 60px; }
         }
     </style>
 </head>
 
 <body>
-    <!-- Header -->
     @include('frontend.partials.header')
 
-    <div class="main-container">
-        <!-- Breadcrumb equivalent -->
-        <!-- <div class="text-center mb-4">
-            <span class="text-muted small">Pricing / {{ $package->name }}</span>
-        </div> -->
-
-        @if($package->plans->count() > 0)
-        <div class="row g-4 justify-content-center p-1">
-            @foreach($package->plans as $plan)
-            <div class="col-6 col-md-6 col-lg-4 col-xl-3">
-                <div class="ref-card">
-                    <div class="ref-card-header">
-                        <h3>{{ $plan->name }}</h3>
-                    </div>
-                    <div class="ref-card-body">
-                        <!-- <p class="ref-description">
-                            {{ $plan->description ?? 'Discover the perfect plan for your needs.' }}
-                        </p> -->
-
-                        @if($plan->price)
-                        <div class="ref-price">₹{{ number_format($plan->price, 0) }}</div>
-                        @else
-                        <!-- <div class="ref-meta">
-                            <i class="fas fa-cube"></i> Flexible Plan
-                        </div> -->
-                        @endif
-
-                        @if(!empty($plan->services))
-                        <ul class="ref-features">
-                            @foreach(array_slice($plan->services, 0, 3) as $service)
-                            <li>{{ $service }}</li>
-                            @endforeach
-                            @if(count($plan->services) > 3)
-                            <li class="text-muted small">+{{ count($plan->services) - 3 }} more</li>
-                            @endif
-                        </ul>
-                        @endif
-
-                        <a href="{{ route('plan.show', $plan->slug) }}" class="ref-btn">
-                            View Plans <i class="ref-btn-icon fa-solid fa-circle-arrow-right"></i>
-                        </a>
-                    </div>
+    <main class="site-main">
+        <section class="package-hero">
+            <div class="container">
+                <div class="crumb">
+                    <a href="{{ url('/') }}">Pricing</a> &nbsp;/&nbsp; {{ $package->name }}
                 </div>
+                <h1>{{ $package->name }}</h1>
+                @if($package->remark)
+                    <p>{{ $package->remark }}</p>
+                @endif
             </div>
-            @endforeach
-        </div>
-        @else
-        <div class="text-center py-5">
-            <h3>No Plans Available</h3>
-        </div>
-        @endif
-    </div>
+        </section>
 
-    <!-- Simple Footer -->
-    <footer class="text-center py-4 text-muted">
-        <small>© {{ date('Y') }} RV Rising Media</small>
-    </footer>
+        <section class="plans-section">
+            <div class="container">
+                @if($package->plans->count() > 0)
+                    <div class="row g-4 justify-content-center">
+                        @foreach($package->plans as $plan)
+                            <div class="col-6 col-md-6 col-lg-4 col-xl-3">
+                                <div class="plan-card">
+                                    <div class="plan-card-header">
+                                        <h3>{{ $plan->name }}</h3>
+                                    </div>
+                                    <div class="plan-card-body">
+                                        @if($plan->price)
+                                            <div class="plan-price">&#8377;{{ number_format($plan->price, 0) }}</div>
+                                        @endif
+
+                                        @if(!empty($plan->services))
+                                            <ul class="plan-features">
+                                                @foreach(array_slice($plan->services, 0, 3) as $service)
+                                                    <li>{{ $service }}</li>
+                                                @endforeach
+                                                @if(count($plan->services) > 3)
+                                                    <li class="more">+{{ count($plan->services) - 3 }} more</li>
+                                                @endif
+                                            </ul>
+                                        @endif
+
+                                        <a href="{{ route('plan.show', $plan->slug) }}" class="plan-btn">
+                                            View Plan <i class="fa-solid fa-circle-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center py-5">
+                        <h3>No Plans Available</h3>
+                    </div>
+                @endif
+            </div>
+        </section>
+    </main>
+
+    @include('frontend.partials.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
