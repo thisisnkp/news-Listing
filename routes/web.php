@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\ColumnController;
 use App\Http\Controllers\Admin\RowController;
 use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\Admin\SiteSettingsController;
+use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\PageSeoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,4 +104,14 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|editor'])->name('admin.'
     Route::post('settings', [SiteSettingsController::class, 'update'])->name('settings.update');
     Route::delete('settings/logo', [SiteSettingsController::class, 'removeLogo'])->name('settings.removeLogo');
     Route::delete('settings/favicon', [SiteSettingsController::class, 'removeFavicon'])->name('settings.removeFavicon');
+
+    // Testimonials
+    Route::resource('testimonials', TestimonialController::class)->except(['show']);
+    Route::post('testimonials/{testimonial}/toggle', [TestimonialController::class, 'toggle'])->name('testimonials.toggle');
+
+    // Pages SEO (only index + edit + update; rows are pre-seeded — no create/destroy)
+    Route::get('page-seos', [PageSeoController::class, 'index'])->name('page_seos.index');
+    Route::get('page-seos/{page_seo}/edit', [PageSeoController::class, 'edit'])->name('page_seos.edit');
+    Route::put('page-seos/{page_seo}', [PageSeoController::class, 'update'])->name('page_seos.update');
+    Route::delete('page-seos/{page_seo}/og-image', [PageSeoController::class, 'removeOgImage'])->name('page_seos.og_image.remove');
 });

@@ -40,6 +40,12 @@ class AppServiceProvider extends ServiceProvider
         $siteRoot = rtrim(preg_replace('#/pricing$#', '', $appUrl), '/');
         View::share('siteRoot', $siteRoot ?: $appUrl);
 
+        // Cache-buster for the shared main-site style.css so the Laravel pricing
+        // pages always pull the latest stylesheet (matches the ?v=<filemtime>
+        // pattern used by includes/header.php on the main site).
+        $cssFile = base_path('../assets/css/style.css');
+        View::share('mainCssVer', file_exists($cssFile) ? filemtime($cssFile) : time());
+
         // Force the URL generator to use APP_URL as the root. The /pricing shim
         // rewrites REQUEST_URI before Laravel boots, so without this Laravel
         // would build URLs like http://localhost/package/x instead of

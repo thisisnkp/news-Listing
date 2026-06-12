@@ -1,4 +1,4 @@
-?{{-- Top Bar — mirrors main site /includes/header.php --}}
+{{-- Top Bar — mirrors main site /includes/header.php --}}
 <div class="top-bar">
     <div class="container top-bar-inner">
         <div class="top-bar-left">
@@ -18,9 +18,8 @@
 {{-- Main Header / Navigation --}}
 <header class="site-header" id="siteHeader">
     <div class="container header-inner">
-        <a href="{{ $siteRoot }}/" class="logo">
-            <span class="logo-mark">RV</span>
-            <span class="logo-text">Rising <small>Media</small></span>
+        <a href="{{ $siteRoot }}/" class="logo" aria-label="RV Rising Media">
+            <img src="{{ $siteRoot }}/assets/imgs/logo.webp" alt="RV Rising Media" class="logo-img" loading="eager" decoding="async">
         </a>
 
         <nav class="main-nav" id="mainNav">

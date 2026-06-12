@@ -16,9 +16,8 @@
 <footer class="site-footer">
     <div class="container footer-grid">
         <div class="footer-col">
-            <a href="{{ $siteRoot }}/" class="logo logo-footer">
-                <span class="logo-mark">RV</span>
-                <span class="logo-text">Rising <small>Media</small></span>
+            <a href="{{ $siteRoot }}/" class="logo logo-footer" aria-label="RV Rising Media">
+                <img src="{{ $siteRoot }}/assets/imgs/logo.webp" alt="RV Rising Media" class="logo-img" loading="lazy" decoding="async">
             </a>
             <p class="footer-about">A leading PR agency and production house headquartered in Mumbai. Since 2017, we help brands, founders, and celebrities build trusted reputations across digital and traditional media.</p>
             <div class="footer-social">

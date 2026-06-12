@@ -6,8 +6,10 @@
 
 @if($favicon = App\Models\SiteSetting::getFavicon())
     <link rel="icon" href="{{ $favicon }}">
+    <link rel="apple-touch-icon" href="{{ $favicon }}">
 @else
-    <link rel="icon" type="image/png" href="https://img.icons8.com/color/96/megaphone.png">
+    <link rel="icon" type="image/webp" href="{{ $siteRoot }}/favicon.webp">
+    <link rel="apple-touch-icon" href="{{ $siteRoot }}/favicon.webp">
 @endif
 
 {{-- Resource hints --}}
@@ -25,4 +27,4 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 {{-- Main site stylesheet — the source of truth for brand look-and-feel --}}
-<link rel="stylesheet" href="{{ $siteRoot }}/assets/css/style.css">
+<link rel="stylesheet" href="{{ $siteRoot }}/assets/css/style.css?v={{ $mainCssVer }}">

@@ -390,6 +390,22 @@
                     </a>
                 </li>
 
+                <div class="nav-section-title">Content</div>
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}" href="{{ route('admin.testimonials.index') }}">
+                        <i class="fas fa-comment-dots"></i>
+                        Testimonials
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.page_seos.*') ? 'active' : '' }}" href="{{ route('admin.page_seos.index') }}">
+                        <i class="fas fa-search"></i>
+                        Pages SEO
+                    </a>
+                </li>
+
                 <div class="nav-section-title">Settings</div>
 
                 <li class="nav-item">
