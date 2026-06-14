@@ -12,6 +12,7 @@ class Testimonial extends Model
         'name',
         'role',
         'company',
+        'city',
         'message',
         'image',
         'video_url',

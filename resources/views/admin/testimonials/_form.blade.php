@@ -32,6 +32,12 @@
         <input type="text" name="company" class="form-control" value="{{ old('company', $t->company ?? '') }}" placeholder="e.g. FinEdge Capital">
     </div>
 
+    <div class="col-md-4">
+        <label class="form-label">City <span class="text-muted">(for Local SEO pages)</span></label>
+        <input type="text" name="city" class="form-control" value="{{ old('city', $t->city ?? '') }}" placeholder="e.g. Mumbai">
+        <small class="text-muted">Tag a city to auto-show this on that city's Local SEO page. Leave blank for general use.</small>
+    </div>
+
     <div class="col-md-12">
         <label class="form-label">Message (for text testimonials)</label>
         <textarea name="message" class="form-control" rows="4" placeholder="Their words…">{{ old('message', $t->message ?? '') }}</textarea>

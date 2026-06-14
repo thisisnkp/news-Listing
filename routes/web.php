@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\Admin\SiteSettingsController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\PageSeoController;
+use App\Http\Controllers\Admin\LeadController;
+use App\Http\Controllers\Admin\LocalSeoController;
+use App\Http\Controllers\Admin\PrPackageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -105,9 +108,31 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|editor'])->name('admin.'
     Route::delete('settings/logo', [SiteSettingsController::class, 'removeLogo'])->name('settings.removeLogo');
     Route::delete('settings/favicon', [SiteSettingsController::class, 'removeFavicon'])->name('settings.removeFavicon');
 
+    // Leads (form submissions) — read-only list + delete
+    Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
+    Route::delete('leads/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
+
+    // PR Packages (pricing cards on /pr-services)
+    Route::get('pr-packages', [PrPackageController::class, 'index'])->name('pr_packages.index');
+    Route::get('pr-packages/create', [PrPackageController::class, 'create'])->name('pr_packages.create');
+    Route::post('pr-packages', [PrPackageController::class, 'store'])->name('pr_packages.store');
+    Route::get('pr-packages/{pr_package}/edit', [PrPackageController::class, 'edit'])->name('pr_packages.edit');
+    Route::put('pr-packages/{pr_package}', [PrPackageController::class, 'update'])->name('pr_packages.update');
+    Route::delete('pr-packages/{pr_package}', [PrPackageController::class, 'destroy'])->name('pr_packages.destroy');
+    Route::post('pr-packages/{pr_package}/toggle', [PrPackageController::class, 'toggle'])->name('pr_packages.toggle');
+
     // Testimonials
     Route::resource('testimonials', TestimonialController::class)->except(['show']);
     Route::post('testimonials/{testimonial}/toggle', [TestimonialController::class, 'toggle'])->name('testimonials.toggle');
+
+    // Local SEO — city landing pages for home / pr-services / studio
+    Route::get('local-seos', [LocalSeoController::class, 'index'])->name('local_seos.index');
+    Route::get('local-seos/create', [LocalSeoController::class, 'create'])->name('local_seos.create');
+    Route::post('local-seos', [LocalSeoController::class, 'store'])->name('local_seos.store');
+    Route::get('local-seos/{local_seo}/edit', [LocalSeoController::class, 'edit'])->name('local_seos.edit');
+    Route::put('local-seos/{local_seo}', [LocalSeoController::class, 'update'])->name('local_seos.update');
+    Route::delete('local-seos/{local_seo}', [LocalSeoController::class, 'destroy'])->name('local_seos.destroy');
+    Route::delete('local-seos/{local_seo}/og-image', [LocalSeoController::class, 'removeOgImage'])->name('local_seos.og_image.remove');
 
     // Pages SEO (only index + edit + update; rows are pre-seeded — no create/destroy)
     Route::get('page-seos', [PageSeoController::class, 'index'])->name('page_seos.index');

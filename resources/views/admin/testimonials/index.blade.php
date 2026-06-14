@@ -45,6 +45,9 @@
                         <td>
                             <div class="fw-semibold">{{ $t->name }}</div>
                             <small class="text-muted">{{ $t->role }}{{ $t->role && $t->company ? ' — ' : '' }}{{ $t->company }}</small>
+                            @if($t->city)
+                                <div><span class="badge bg-light text-dark border"><i class="fas fa-map-marker-alt me-1"></i>{{ $t->city }}</span></div>
+                            @endif
                         </td>
                         <td>
                             @if($t->type === 'video')

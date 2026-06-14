@@ -74,6 +74,7 @@ class TestimonialController extends Controller
             'name'       => 'required|string|max:120',
             'role'       => 'nullable|string|max:120',
             'company'    => 'nullable|string|max:120',
+            'city'       => 'nullable|string|max:120',
             'message'    => 'nullable|string|max:2000',
             'image'      => 'nullable|image|max:4096',
             'video_url'  => 'nullable|url|max:500',

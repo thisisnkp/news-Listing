@@ -393,6 +393,13 @@
                 <div class="nav-section-title">Content</div>
 
                 <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.leads.*') ? 'active' : '' }}" href="{{ route('admin.leads.index') }}">
+                        <i class="fas fa-inbox"></i>
+                        Leads
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}" href="{{ route('admin.testimonials.index') }}">
                         <i class="fas fa-comment-dots"></i>
                         Testimonials
@@ -400,9 +407,23 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.pr_packages.*') ? 'active' : '' }}" href="{{ route('admin.pr_packages.index') }}">
+                        <i class="fas fa-rupee-sign"></i>
+                        PR Packages
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('admin.page_seos.*') ? 'active' : '' }}" href="{{ route('admin.page_seos.index') }}">
                         <i class="fas fa-search"></i>
                         Pages SEO
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.local_seos.*') ? 'active' : '' }}" href="{{ route('admin.local_seos.index') }}">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Local SEO
                     </a>
                 </li>
 
