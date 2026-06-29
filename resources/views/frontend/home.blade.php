@@ -155,9 +155,89 @@
         .empty-state i { font-size: 3rem; color: var(--primary); opacity: 0.6; margin-bottom: 14px; }
         .empty-state h3 { margin-bottom: 6px; }
 
+        /* Pill cloud section (mirrors the pr-services "Capability Index") */
+        .pricing-cloud {
+            margin-top: -44px;
+            position: relative;
+            z-index: 2;
+            padding-top: 56px;
+            border-radius: 28px 28px 0 0;
+        }
+        /* ===== Explore — category selector grid ===== */
+        .pricing-cats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            max-width: 940px;
+            margin: 0 auto;
+        }
+        .pricing-cat {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
+            transition: transform .25s ease, box-shadow .3s ease, border-color .3s ease;
+        }
+        /* Accent bar slides up on hover */
+        .pricing-cat::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: var(--gradient);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform .3s ease;
+        }
+        .pricing-cat:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(230, 57, 70, 0.14);
+            border-color: rgba(230, 57, 70, 0.35);
+            color: var(--dark);
+        }
+        .pricing-cat:hover::before { transform: scaleY(1); }
+        .pricing-cat-icon {
+            flex-shrink: 0;
+            width: 46px; height: 46px;
+            display: grid; place-items: center;
+            border-radius: 13px;
+            background: rgba(230, 57, 70, 0.10);
+            color: var(--primary);
+            font-size: 1.05rem;
+            transition: background .3s ease, color .3s ease, transform .35s ease;
+        }
+        .pricing-cat:hover .pricing-cat-icon {
+            background: var(--gradient);
+            color: var(--white);
+            transform: rotate(-6deg) scale(1.08);
+        }
+        .pricing-cat-label { flex-grow: 1; line-height: 1.3; }
+        .pricing-cat-arrow {
+            flex-shrink: 0;
+            color: var(--primary);
+            font-size: .85rem;
+            opacity: 0;
+            transform: translateX(-6px);
+            transition: opacity .3s ease, transform .3s ease;
+        }
+        .pricing-cat:hover .pricing-cat-arrow { opacity: 1; transform: translateX(0); }
+
         @media (max-width: 768px) {
             .pricing-hero { padding: 50px 0 70px; }
-            .packages-section { padding: 40px 0 60px; }
+            .pricing-cloud { padding-top: 40px; padding-bottom: 56px; }
+            .pricing-cats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .pricing-cat { padding: 13px 14px; font-size: 13.5px; gap: 10px; }
+            .pricing-cat-icon { width: 40px; height: 40px; font-size: .95rem; }
+            .pricing-cat-arrow { display: none; }
         }
     </style>
 </head>
@@ -174,42 +254,38 @@
             </div>
         </section>
 
-        <section class="packages-section">
+        <section class="pr-cap pricing-cloud">
             <div class="container">
-                @if($packages->count() > 0)
-                    <div class="row g-4 justify-content-center">
-                        @foreach($packages as $package)
-                            <div class="col-6 col-md-6 col-lg-4 col-xl-3">
-                                <div class="pkg-card">
-                                    <div class="pkg-card-header">
-                                        <h3>{{ $package->name }}</h3>
-                                    </div>
-                                    <div class="pkg-card-body">
-                                        <p class="remark">{{ $package->remark ?: 'Discover the perfect plan for your needs.' }}</p>
+                <div class="section-head">
+                    <span class="section-tag">Explore</span>
+                    <h2>Our <span class="pr-cap-accent">PR &amp; Media Pricing</span></h2>
+                    <p>Tap a category to view its detailed pricing, packages and media lists.</p>
+                </div>
 
-                                        <div class="pkg-meta">
-                                            @if($package->isMedia())
-                                                <span class="pkg-badge"><i class="fas fa-table"></i> Media List</span>
-                                            @else
-                                                <span class="pkg-badge"><i class="fas fa-layer-group"></i> {{ $package->plans_count }} {{ Str::plural('Plan', $package->plans_count) }}</span>
-                                            @endif
-                                        </div>
-
-                                        <a href="{{ route('package.show', $package->slug) }}" class="pkg-btn">
-                                            View Details <i class="fa-solid fa-circle-arrow-right"></i>
-                                        </a>
-                                    </div>
-                                </div>
+                <div class="pricing-cats">
+                    @forelse($pricingButtons as $btn)
+                        <a href="{{ $btn->url }}" class="pricing-cat"@if($btn->new_tab) target="_blank" rel="noopener"@endif>
+                            <span class="pricing-cat-icon"><i class="{{ $btn->icon ?: 'fas fa-layer-group' }}"></i></span>
+                            <span class="pricing-cat-label">{{ $btn->label }}</span>
+                            <i class="fas fa-arrow-right pricing-cat-arrow"></i>
+                        </a>
+                    @empty
+                        {{-- No admin buttons yet → fall back to the public packages --}}
+                        @forelse($packages as $package)
+                            <a href="{{ route('package.show', $package->slug) }}" class="pricing-cat">
+                                <span class="pricing-cat-icon"><i class="fas {{ $package->isMedia() ? 'fa-table' : 'fa-layer-group' }}"></i></span>
+                                <span class="pricing-cat-label">{{ $package->name }}</span>
+                                <i class="fas fa-arrow-right pricing-cat-arrow"></i>
+                            </a>
+                        @empty
+                            <div class="empty-state">
+                                <i class="fas fa-box-open"></i>
+                                <h3>Nothing here yet</h3>
+                                <p>Add buttons from the admin panel, or check back later.</p>
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="empty-state">
-                        <i class="fas fa-box-open"></i>
-                        <h3>No Packages Available</h3>
-                        <p>Check back later for new packages.</p>
-                    </div>
-                @endif
+                        @endforelse
+                    @endforelse
+                </div>
             </div>
         </section>
     </main>

@@ -7,6 +7,7 @@ use App\Models\Package;
 use App\Models\Plan;
 use App\Models\Language;
 use App\Models\SiteSetting;
+use App\Models\PricingButton;
 use Illuminate\Http\Request;
 
 class TableController extends Controller
@@ -24,7 +25,10 @@ class TableController extends Controller
         $defaultLanguage = Language::getDefault();
         $buttonName = SiteSetting::where('key', 'order_button_text')->first()?->value ?? 'View Details';
 
-        return view('frontend.home', compact('packages', 'languages', 'defaultLanguage', 'buttonName'));
+        // Admin-managed pill buttons for the landing page (fall back to packages when none).
+        $pricingButtons = PricingButton::active()->ordered()->get();
+
+        return view('frontend.home', compact('packages', 'languages', 'defaultLanguage', 'buttonName', 'pricingButtons'));
     }
 
     public function showPackage(string $slug)

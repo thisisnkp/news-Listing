@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\PageSeoController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LocalSeoController;
 use App\Http\Controllers\Admin\PrPackageController;
+use App\Http\Controllers\Admin\PricingButtonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +112,16 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|editor'])->name('admin.'
     // Leads (form submissions) — read-only list + delete
     Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
     Route::delete('leads/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
+
+    // Pricing Buttons (pill-cloud links on the /pricing landing page)
+    Route::get('pricing-buttons', [PricingButtonController::class, 'index'])->name('pricing_buttons.index');
+    Route::get('pricing-buttons/create', [PricingButtonController::class, 'create'])->name('pricing_buttons.create');
+    Route::post('pricing-buttons/import', [PricingButtonController::class, 'import'])->name('pricing_buttons.import');
+    Route::post('pricing-buttons', [PricingButtonController::class, 'store'])->name('pricing_buttons.store');
+    Route::get('pricing-buttons/{pricing_button}/edit', [PricingButtonController::class, 'edit'])->name('pricing_buttons.edit');
+    Route::put('pricing-buttons/{pricing_button}', [PricingButtonController::class, 'update'])->name('pricing_buttons.update');
+    Route::delete('pricing-buttons/{pricing_button}', [PricingButtonController::class, 'destroy'])->name('pricing_buttons.destroy');
+    Route::post('pricing-buttons/{pricing_button}/toggle', [PricingButtonController::class, 'toggle'])->name('pricing_buttons.toggle');
 
     // PR Packages (pricing cards on /pr-services)
     Route::get('pr-packages', [PrPackageController::class, 'index'])->name('pr_packages.index');

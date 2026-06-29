@@ -1,8 +1,8 @@
 -- ============================================================================
 -- RV Rising Media — production deployment SQL
--- Adds five new tables (testimonials, page_seos, leads, local_seos, pr_packages),
--- the testimonials.city column + seeded SEO/package defaults, and registers the
--- migrations so Laravel won't try to re-run them.
+-- Adds six new tables (testimonials, page_seos, leads, local_seos, pr_packages,
+-- pricing_buttons), the testimonials.city column + seeded SEO/package defaults,
+-- and registers the migrations so Laravel won't try to re-run them.
 --
 -- NOTE: rvr-p/database/update.sql is the maintained single-file updater — prefer
 -- running that on deploy. This file is kept in sync for reference.
@@ -241,7 +241,24 @@ VALUES
   ('Elite',     'ANI + BS + PTI',  '24,999', '16,500', 'Triple wire combo — maximum authority.',     '["ANI Wire","Business Standard","PTI Wire","400+ total placements"]',                                     NULL,           0, 6, 1, NOW(), NOW());
 
 -- ----------------------------------------------------------------------------
--- 8. Register the migrations so `php artisan migrate` on production
+-- 8. pricing_buttons — pill-cloud buttons on the /pricing landing page
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `pricing_buttons` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `label` VARCHAR(160) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `icon` VARCHAR(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `url` VARCHAR(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `new_tab` TINYINT(1) NOT NULL DEFAULT '0',
+  `sort_order` INT UNSIGNED NOT NULL DEFAULT '0',
+  `is_active` TINYINT(1) NOT NULL DEFAULT '1',
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `pricing_buttons_is_active_sort_order_index` (`is_active`,`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- 9. Register the migrations so `php artisan migrate` on production
 --    sees them as already-applied and skips re-running them.
 -- ----------------------------------------------------------------------------
 INSERT IGNORE INTO `migrations` (`migration`, `batch`) VALUES
@@ -250,7 +267,8 @@ INSERT IGNORE INTO `migrations` (`migration`, `batch`) VALUES
   ('2026_06_12_100001_create_leads_table',                (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m)),
   ('2026_06_12_100002_create_local_seos_table',           (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m)),
   ('2026_06_12_100003_add_city_to_testimonials_table',    (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m)),
-  ('2026_06_12_100004_create_pr_packages_table',          (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m));
+  ('2026_06_12_100004_create_pr_packages_table',          (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m)),
+  ('2026_06_12_100005_create_pricing_buttons_table',      (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m));
 
 -- ============================================================================
 -- DONE. Verify with:

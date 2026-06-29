@@ -390,6 +390,13 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.pricing_buttons.*') ? 'active' : '' }}" href="{{ route('admin.pricing_buttons.index') }}">
+                        <i class="fas fa-hand-pointer"></i>
+                        Pricing Buttons
+                    </a>
+                </li>
+
                 <div class="nav-section-title">Content</div>
 
                 <li class="nav-item">

@@ -26,7 +26,13 @@
             <button class="nav-close" id="navClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
             <ul>
                 <li><a href="{{ $siteRoot }}/">Home</a></li>
-                <li><a href="{{ $siteRoot }}/about">About Us</a></li>
+                <li class="nav-item-has-dd">
+                    <a href="{{ $siteRoot }}/about" class="nav-dd-toggle">About <i class="fas fa-chevron-down nav-dd-caret"></i></a>
+                    <ul class="nav-dd-menu">
+                        <li><a href="{{ $siteRoot }}/about">About Us</a></li>
+                        <li><a href="{{ $siteRoot }}/about-founder">About Founder</a></li>
+                    </ul>
+                </li>
                 <li><a href="{{ $siteRoot }}/services">Our Services</a></li>
                 <li><a href="{{ $siteRoot }}/pr-services">PR Services</a></li>
                 <li><a href="{{ $siteRoot }}/studio">Studio</a></li>

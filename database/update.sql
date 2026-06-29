@@ -9,6 +9,7 @@
 --   • leads          — every contact/popup/studio form submission (dedupe + mail cooldown)
 --   • local_seos     — city landing pages for home / pr-services / studio
 --   • pr_packages    — PR pricing cards on /pr-services (6 default cards seeded)
+--   • pricing_buttons— pill-cloud buttons on the /pricing landing page
 --
 -- 100% IDEMPOTENT — safe to run multiple times and safe whether the DB already
 -- has some of these tables/columns or none of them. Nothing existing is
@@ -209,7 +210,24 @@ VALUES
   ('Elite',     'ANI + BS + PTI',  '24,999', '16,500', 'Triple wire combo — maximum authority.',     '["ANI Wire","Business Standard","PTI Wire","400+ total placements"]',                                                NULL,           0, 6, 1, NOW(), NOW());
 
 -- ----------------------------------------------------------------------------
--- 6. Register all migrations so `php artisan migrate` on production treats them
+-- 6. pricing_buttons  (pill-cloud buttons on the /pricing landing page)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `pricing_buttons` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `label` VARCHAR(160) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `icon` VARCHAR(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `url` VARCHAR(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `new_tab` TINYINT(1) NOT NULL DEFAULT '0',
+  `sort_order` INT UNSIGNED NOT NULL DEFAULT '0',
+  `is_active` TINYINT(1) NOT NULL DEFAULT '1',
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `pricing_buttons_is_active_sort_order_index` (`is_active`,`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- 7. Register all migrations so `php artisan migrate` on production treats them
 --    as already-applied and never tries to re-create these tables.
 -- ----------------------------------------------------------------------------
 INSERT IGNORE INTO `migrations` (`migration`, `batch`) VALUES
@@ -218,7 +236,8 @@ INSERT IGNORE INTO `migrations` (`migration`, `batch`) VALUES
   ('2026_06_12_100001_create_leads_table',             (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m)),
   ('2026_06_12_100002_create_local_seos_table',        (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m)),
   ('2026_06_12_100003_add_city_to_testimonials_table', (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m)),
-  ('2026_06_12_100004_create_pr_packages_table',       (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m));
+  ('2026_06_12_100004_create_pr_packages_table',       (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m)),
+  ('2026_06_12_100005_create_pricing_buttons_table',   (SELECT IFNULL(MAX(b), 1) FROM (SELECT MAX(batch) AS b FROM migrations) AS m));
 
 -- ============================================================================
 -- DONE. Verify with:
@@ -227,4 +246,5 @@ INSERT IGNORE INTO `migrations` (`migration`, `batch`) VALUES
 --   SELECT page_slug, meta_title FROM page_seos;  -- expect 5 rows
 --   SELECT COUNT(*) FROM local_seos;
 --   SELECT name, price FROM pr_packages;          -- expect 6 rows
+--   SELECT COUNT(*) FROM pricing_buttons;
 -- ============================================================================
