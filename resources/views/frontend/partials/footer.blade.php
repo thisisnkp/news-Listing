@@ -55,7 +55,7 @@
         <div class="footer-col">
             <h4>Reach Us</h4>
             <ul class="footer-contact">
-                <li><i class="fas fa-map-marker-alt"></i> <span>G-93, Oshiwara, Andheri West, Mumbai, Maharashtra - 400053</span></li>
+                <li><i class="fas fa-map-marker-alt"></i> <span>28, 2nd Floor, Om Heera Panna, Oshiwara, Andheri West, Mumbai - 400053</span></li>
                 <li><i class="fas fa-phone-alt"></i> <a href="tel:9594643234">+91 95946 43234</a></li>
                 <li><i class="fas fa-envelope"></i> <a href="mailto:contact@rvrising.com">contact@rvrising.com</a></li>
                 <li><i class="fas fa-envelope"></i> <a href="mailto:media@rvrising.com">media@rvrising.com</a></li>
@@ -75,16 +75,3 @@
 {{-- Main site JS — gives Laravel pricing pages the same nav toggle, smooth scroll, etc. --}}
 <script src="{{ $siteRoot }}/assets/js/main.js" defer></script>
 
-{{-- Tawk.to live chat --}}
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/62b82d297b967b1179968ca4/1g6fn0rug';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-{{-- End Tawk.to --}}
