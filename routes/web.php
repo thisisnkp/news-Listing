@@ -1,0 +1,153 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Frontend\TableController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\ColumnController;
+use App\Http\Controllers\Admin\RowController;
+use App\Http\Controllers\Admin\LanguageController;
+use App\Http\Controllers\Admin\SiteSettingsController;
+use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\PageSeoController;
+use App\Http\Controllers\Admin\LeadController;
+use App\Http\Controllers\Admin\LocalSeoController;
+use App\Http\Controllers\Admin\PrPackageController;
+use App\Http\Controllers\Admin\PricingButtonController;
+
+/*
+|--------------------------------------------------------------------------
+| Frontend Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', [TableController::class, 'index'])->name('home');
+Route::get('/package/{slug}', [TableController::class, 'showPackage'])->name('package.show');
+Route::get('/plan/{slug}', [TableController::class, 'showPlan'])->name('plan.show');
+Route::post('/plan/{slug}/filter', [TableController::class, 'filter'])->name('plan.filter');
+Route::get('/plan/{slug}/export', [TableController::class, 'export'])->name('plan.export');
+Route::get('/package/{slug}/export', [TableController::class, 'exportPackage'])->name('package.export');
+
+// Legacy routes for backward compatibility
+Route::get('/table/{slug}', [TableController::class, 'showPlan'])->name('table.show');
+Route::post('/table/{slug}/filter', [TableController::class, 'filter'])->name('table.filter');
+Route::get('/table/{slug}/export', [TableController::class, 'export'])->name('table.export');
+
+/*
+|--------------------------------------------------------------------------
+| Admin Authentication Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Protected Admin Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->middleware(['auth', 'role:admin|editor'])->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Packages Management
+    Route::resource('packages', PackageController::class);
+    Route::post('packages/{package}/toggle', [PackageController::class, 'toggle'])->name('packages.toggle');
+    Route::post('packages/reorder', [PackageController::class, 'reorder'])->name('packages.reorder');
+
+    // Plans Management (under packages)
+    Route::get('packages/{package}/plans', [PlanController::class, 'index'])->name('plans.index');
+    Route::get('packages/{package}/plans/create', [PlanController::class, 'create'])->name('plans.create');
+    Route::post('packages/{package}/plans', [PlanController::class, 'store'])->name('plans.store');
+    Route::get('plans/{plan}/edit', [PlanController::class, 'edit'])->name('plans.edit');
+    Route::put('plans/{plan}', [PlanController::class, 'update'])->name('plans.update');
+    Route::delete('plans/{plan}', [PlanController::class, 'destroy'])->name('plans.destroy');
+    Route::post('plans/{plan}/toggle', [PlanController::class, 'toggle'])->name('plans.toggle');
+    Route::post('plans/reorder', [PlanController::class, 'reorder'])->name('plans.reorder');
+
+    // Columns Management (under plans)
+    Route::get('plans/{plan}/columns', [ColumnController::class, 'index'])->name('columns.index');
+    Route::post('plans/{plan}/columns', [ColumnController::class, 'store'])->name('columns.store');
+    Route::put('columns/{column}', [ColumnController::class, 'update'])->name('columns.update');
+    Route::delete('columns/{column}', [ColumnController::class, 'destroy'])->name('columns.destroy');
+    Route::post('columns/reorder', [ColumnController::class, 'reorder'])->name('columns.reorder');
+
+    // Columns Management (under packages - for media type)
+    Route::get('packages/{package}/columns', [ColumnController::class, 'indexForPackage'])->name('columns.index.package');
+    Route::post('packages/{package}/columns', [ColumnController::class, 'storeForPackage'])->name('columns.store.package');
+
+    // Rows Management (under plans)
+    Route::get('plans/{plan}/rows', [RowController::class, 'index'])->name('rows.index');
+    Route::post('plans/{plan}/rows', [RowController::class, 'store'])->name('rows.store');
+    Route::put('rows/{row}', [RowController::class, 'update'])->name('rows.update');
+    Route::delete('rows/{row}', [RowController::class, 'destroy'])->name('rows.destroy');
+    Route::post('plans/{plan}/rows/import', [RowController::class, 'import'])->name('rows.import');
+    Route::post('rows/reorder', [RowController::class, 'reorder'])->name('rows.reorder');
+    Route::post('rows/bulk-destroy', [RowController::class, 'bulkDestroy'])->name('rows.bulk_destroy');
+    Route::post('rows/sort-alphabetically', [RowController::class, 'sortAlphabetically'])->name('rows.sort_alphabetically');
+
+    // Rows Management (under packages - for media type)
+    Route::get('packages/{package}/rows', [RowController::class, 'indexForPackage'])->name('rows.index.package');
+    Route::post('packages/{package}/rows', [RowController::class, 'storeForPackage'])->name('rows.store.package');
+    Route::post('packages/{package}/rows/import', [RowController::class, 'importForPackage'])->name('rows.import.package');
+
+    // Languages Management
+    Route::resource('languages', LanguageController::class);
+    Route::post('languages/{language}/default', [LanguageController::class, 'setDefault'])->name('languages.default');
+    Route::post('languages/{language}/toggle', [LanguageController::class, 'toggle'])->name('languages.toggle');
+
+    // Site Settings
+    Route::get('settings', [SiteSettingsController::class, 'index'])->name('settings.index');
+    Route::post('settings', [SiteSettingsController::class, 'update'])->name('settings.update');
+    Route::delete('settings/logo', [SiteSettingsController::class, 'removeLogo'])->name('settings.removeLogo');
+    Route::delete('settings/favicon', [SiteSettingsController::class, 'removeFavicon'])->name('settings.removeFavicon');
+
+    // Leads (form submissions) — read-only list + delete
+    Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
+    Route::delete('leads/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
+
+    // Pricing Buttons (pill-cloud links on the /pricing landing page)
+    Route::get('pricing-buttons', [PricingButtonController::class, 'index'])->name('pricing_buttons.index');
+    Route::get('pricing-buttons/create', [PricingButtonController::class, 'create'])->name('pricing_buttons.create');
+    Route::post('pricing-buttons/import', [PricingButtonController::class, 'import'])->name('pricing_buttons.import');
+    Route::post('pricing-buttons', [PricingButtonController::class, 'store'])->name('pricing_buttons.store');
+    Route::get('pricing-buttons/{pricing_button}/edit', [PricingButtonController::class, 'edit'])->name('pricing_buttons.edit');
+    Route::put('pricing-buttons/{pricing_button}', [PricingButtonController::class, 'update'])->name('pricing_buttons.update');
+    Route::delete('pricing-buttons/{pricing_button}', [PricingButtonController::class, 'destroy'])->name('pricing_buttons.destroy');
+    Route::post('pricing-buttons/{pricing_button}/toggle', [PricingButtonController::class, 'toggle'])->name('pricing_buttons.toggle');
+
+    // PR Packages (pricing cards on /pr-services)
+    Route::get('pr-packages', [PrPackageController::class, 'index'])->name('pr_packages.index');
+    Route::get('pr-packages/create', [PrPackageController::class, 'create'])->name('pr_packages.create');
+    Route::post('pr-packages', [PrPackageController::class, 'store'])->name('pr_packages.store');
+    Route::get('pr-packages/{pr_package}/edit', [PrPackageController::class, 'edit'])->name('pr_packages.edit');
+    Route::put('pr-packages/{pr_package}', [PrPackageController::class, 'update'])->name('pr_packages.update');
+    Route::delete('pr-packages/{pr_package}', [PrPackageController::class, 'destroy'])->name('pr_packages.destroy');
+    Route::post('pr-packages/{pr_package}/toggle', [PrPackageController::class, 'toggle'])->name('pr_packages.toggle');
+
+    // Testimonials
+    Route::resource('testimonials', TestimonialController::class)->except(['show']);
+    Route::post('testimonials/{testimonial}/toggle', [TestimonialController::class, 'toggle'])->name('testimonials.toggle');
+
+    // Local SEO — city landing pages for home / pr-services / studio
+    Route::get('local-seos', [LocalSeoController::class, 'index'])->name('local_seos.index');
+    Route::get('local-seos/create', [LocalSeoController::class, 'create'])->name('local_seos.create');
+    Route::post('local-seos', [LocalSeoController::class, 'store'])->name('local_seos.store');
+    Route::get('local-seos/{local_seo}/edit', [LocalSeoController::class, 'edit'])->name('local_seos.edit');
+    Route::put('local-seos/{local_seo}', [LocalSeoController::class, 'update'])->name('local_seos.update');
+    Route::delete('local-seos/{local_seo}', [LocalSeoController::class, 'destroy'])->name('local_seos.destroy');
+    Route::delete('local-seos/{local_seo}/og-image', [LocalSeoController::class, 'removeOgImage'])->name('local_seos.og_image.remove');
+
+    // Pages SEO (only index + edit + update; rows are pre-seeded — no create/destroy)
+    Route::get('page-seos', [PageSeoController::class, 'index'])->name('page_seos.index');
+    Route::get('page-seos/{page_seo}/edit', [PageSeoController::class, 'edit'])->name('page_seos.edit');
+    Route::put('page-seos/{page_seo}', [PageSeoController::class, 'update'])->name('page_seos.update');
+    Route::delete('page-seos/{page_seo}/og-image', [PageSeoController::class, 'removeOgImage'])->name('page_seos.og_image.remove');
+});
