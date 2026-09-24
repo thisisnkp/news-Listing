@@ -70,21 +70,25 @@ class PageImageController extends Controller
             return back()->withErrors(['images' => 'That section does not accept multiple images.']);
         }
 
-        $next = (int) PageImage::where('page_slug', $data['page_slug'])
-            ->where('section_key', $data['section_key'])
-            ->max('sort_order');
+        $files = $request->file('images');
+        $count = count($files);
 
-        foreach ($request->file('images') as $file) {
+        // Newest first: push the existing images down so the uploads take the top slots.
+        // Their relative order is preserved, and the admin can still renumber by hand.
+        PageImage::where('page_slug', $data['page_slug'])
+            ->where('section_key', $data['section_key'])
+            ->increment('sort_order', $count);
+
+        $slot = 0;
+        foreach ($files as $file) {
             PageImage::create([
                 'page_slug'   => $data['page_slug'],
                 'section_key' => $data['section_key'],
                 'image'       => $file->store('page_images', 'public'),
-                'sort_order'  => ++$next,
+                'sort_order'  => $slot++,
                 'is_active'   => true,
             ]);
         }
-
-        $count = count($request->file('images'));
 
         return redirect()
             ->route('admin.page_images.index', ['page' => $data['page_slug']])

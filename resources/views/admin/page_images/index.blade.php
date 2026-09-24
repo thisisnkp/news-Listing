@@ -132,7 +132,7 @@
                     <div class="col-md-8">
                         <label class="form-label">Add images</label>
                         <input type="file" name="images[]" class="form-control" accept="image/*" multiple required>
-                        <div class="form-text">Pick several at once &middot; up to 6 MB each.</div>
+                        <div class="form-text">Pick several at once &middot; up to 6 MB each &middot; new uploads go to the top.</div>
                     </div>
                     <div class="col-md-4">
                         <button class="btn btn-primary w-100"><i class="fas fa-upload me-1"></i> Upload</button>
@@ -198,7 +198,8 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <small class="text-muted">
-                                Lower &ldquo;Order&rdquo; shows first. The first 9 visible images load with the page;
+                                Newly uploaded images go to the top by themselves. Lower &ldquo;Order&rdquo; shows first,
+                                so edit these numbers to rearrange. The first 9 visible images load with the page;
                                 the rest sit behind &ldquo;View All Photos&rdquo;.
                             </small>
                             <button class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Gallery</button>
