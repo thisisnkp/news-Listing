@@ -421,6 +421,13 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.page_images.*') ? 'active' : '' }}" href="{{ route('admin.page_images.index') }}">
+                        <i class="fas fa-images"></i>
+                        Page Images
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('admin.page_seos.*') ? 'active' : '' }}" href="{{ route('admin.page_seos.index') }}">
                         <i class="fas fa-search"></i>
                         Pages SEO

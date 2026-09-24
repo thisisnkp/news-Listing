@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LocalSeoController;
 use App\Http\Controllers\Admin\PrPackageController;
 use App\Http\Controllers\Admin\PricingButtonController;
+use App\Http\Controllers\Admin\PageImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -144,6 +145,14 @@ Route::prefix('admin')->middleware(['auth', 'role:admin|editor'])->name('admin.'
     Route::put('local-seos/{local_seo}', [LocalSeoController::class, 'update'])->name('local_seos.update');
     Route::delete('local-seos/{local_seo}', [LocalSeoController::class, 'destroy'])->name('local_seos.destroy');
     Route::delete('local-seos/{local_seo}/og-image', [LocalSeoController::class, 'removeOgImage'])->name('local_seos.og_image.remove');
+
+    // Page Images — section visuals on /studio and /pr-services
+    Route::get('page-images', [PageImageController::class, 'index'])->name('page_images.index');
+    Route::post('page-images', [PageImageController::class, 'store'])->name('page_images.store');
+    Route::post('page-images/save', [PageImageController::class, 'bulkUpdate'])->name('page_images.bulk_update');
+    Route::put('page-images/{page_image}', [PageImageController::class, 'update'])->name('page_images.update');
+    Route::delete('page-images/{page_image}/upload', [PageImageController::class, 'removeImage'])->name('page_images.upload.remove');
+    Route::delete('page-images/{page_image}', [PageImageController::class, 'destroy'])->name('page_images.destroy');
 
     // Pages SEO (only index + edit + update; rows are pre-seeded — no create/destroy)
     Route::get('page-seos', [PageSeoController::class, 'index'])->name('page_seos.index');

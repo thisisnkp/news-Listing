@@ -50,8 +50,21 @@ class LocalSeo extends Model
 
     public function url(): string
     {
-        $prefix = self::PAGE_PREFIX[$this->page_slug] ?? '';
-        return rtrim(config('app.url'), '/') . $prefix . '/' . $this->city_slug;
+        return self::siteBaseUrl() . $this->publicPath();
+    }
+
+    /**
+     * Root URL of the public PHP site that actually serves the city pages.
+     *
+     * The admin panel is mounted at "/pricing" (see pricing.php shim), so
+     * config('app.url') sits one level below the site root — city pages live
+     * at /city/{city}, not /pricing/city/{city}. Strip the mount prefix.
+     */
+    public static function siteBaseUrl(): string
+    {
+        $base = rtrim((string) config('app.url'), '/');
+
+        return preg_replace('#/pricing$#', '', $base);
     }
 
     public function publicPath(): string
